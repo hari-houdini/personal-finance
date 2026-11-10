@@ -1,5 +1,6 @@
 // Distribution family: box plot by category, histogram of payment sizes, dot plot of every payment.
-import { catColor, catLabel, CATEGORY_SLOTS, compactMoney, dayLabel, emptyState, frame, hitTarget, measure, money, OTHER_COLOR, svgRoot } from "./core.js";
+// Each chart takes ctx = { select, go }. A click filters the page (or opens Transactions for one payment).
+import { catColor, catLabel, CATEGORY_SLOTS, compactMoney, dayLabel, emptyState, frame, hitTarget, isPicked, markPicked, measure, money, OTHER_COLOR, svgRoot } from "./core.js";
 
 // Fixed buckets read better than automatic bins for money: each one is a size a person recognises.
 const BUCKETS = [
@@ -14,7 +15,7 @@ const BUCKETS = [
 ];
 
 // ---- Box plot: middle half of payments per category, median line, whiskers at 1.5 IQR ----
-export function boxplot(host, amountsByCategory) {
+export function boxplot(host, amountsByCategory, ctx) {
   const rows = Object.entries(amountsByCategory)
     .filter(([, v]) => v.length)
     .map(([id, v]) => {
@@ -43,6 +44,7 @@ export function boxplot(host, amountsByCategory) {
       headers: ["Category", "Payments", "Median", "Middle half", "Largest"],
       rows: rows.map((r) => [catLabel(r.id), r.s.length, money(r.med), `${money(r.q1)} to ${money(r.q3)}`, money(r.s[r.s.length - 1])]),
       numeric: [1, 2, 4],
+      actions: rows.map((r) => () => ctx.select({ category: r.id })),
     },
   });
   const svg = svgRoot(plot, width, height, "Box plot of payment sizes by category");
@@ -50,25 +52,26 @@ export function boxplot(host, amountsByCategory) {
     const cy = i * rowH + rowH / 2;
     const color = catColor(r.id);
     const g = svg.append("g");
-    g.append("text").attr("x", 0).attr("y", cy).attr("dy", "0.35em").attr("class", "label-strong").attr("font-size", 12).text(catLabel(r.id));
+    const label = g.append("text").attr("x", 0).attr("y", cy).attr("dy", "0.35em").attr("class", "label-strong").attr("font-size", 12).text(catLabel(r.id));
+    hitTarget(label, { title: catLabel(r.id), rows: [], onSelect: () => ctx.select({ category: r.id }) });
     g.append("line").attr("x1", x(r.lo)).attr("x2", x(r.hi)).attr("y1", cy).attr("y2", cy).attr("stroke", "var(--ink-3)");
     [r.lo, r.hi].forEach((v) => {
       g.append("line").attr("x1", x(v)).attr("x2", x(v)).attr("y1", cy - 6).attr("y2", cy + 6).attr("stroke", "var(--ink-3)");
     });
-    g.append("rect")
+    const box = g.append("rect")
       .attr("x", x(r.q1)).attr("y", cy - 9).attr("width", Math.max(2, x(r.q3) - x(r.q1))).attr("height", 18).attr("rx", 2)
-      .attr("fill", color).attr("fill-opacity", 0.3).attr("stroke", color)
-      .each(function () {
-        hitTarget(d3.select(this), {
-          title: catLabel(r.id),
-          rows: [
-            { label: "Payments", value: String(r.s.length) },
-            { label: "Median", value: money(r.med) },
-            { label: "Middle half", value: `${money(r.q1)} to ${money(r.q3)}` },
-            { label: "Largest", value: money(r.s[r.s.length - 1]) },
-          ],
-        });
-      });
+      .attr("fill", color).attr("fill-opacity", 0.3).attr("stroke", color);
+    hitTarget(box, {
+      title: catLabel(r.id),
+      rows: [
+        { label: "Payments", value: String(r.s.length) },
+        { label: "Median", value: money(r.med) },
+        { label: "Middle half", value: `${money(r.q1)} to ${money(r.q3)}` },
+        { label: "Largest", value: money(r.s[r.s.length - 1]) },
+      ],
+      onSelect: () => ctx.select({ category: r.id }),
+    });
+    markPicked(box, isPicked(ctx.filters, { category: r.id }));
     g.append("line").attr("x1", x(r.med)).attr("x2", x(r.med)).attr("y1", cy - 9).attr("y2", cy + 9).attr("stroke", "var(--ink)").attr("stroke-width", 2);
     g.selectAll("circle").data(r.outliers).join("circle")
       .attr("cx", (v) => x(v)).attr("cy", cy).attr("r", 2.5).attr("fill", "var(--ink-3)").attr("fill-opacity", 0.6);
@@ -78,8 +81,8 @@ export function boxplot(host, amountsByCategory) {
     .call((g) => g.select(".domain").remove());
 }
 
-// ---- Histogram: how many payments fall in each size band ----
-export function histogram(host, amountsByCategory) {
+// ---- Histogram: how many payments fall in each size band. Clicking a band filters to that size. ----
+export function histogram(host, amountsByCategory, ctx) {
   const all = Object.values(amountsByCategory).flat();
   if (!all.length) return emptyState(host);
   const counts = BUCKETS.map((b) => ({ ...b, count: all.filter((v) => v >= b.lo && v < b.hi).length }));
@@ -89,6 +92,7 @@ export function histogram(host, amountsByCategory) {
   const bottom = 40;
   const x = d3.scaleBand().domain(counts.map((c) => c.short)).range([36, width - 8]).padding(0.18);
   const y = d3.scaleLinear().domain([0, d3.max(counts, (c) => c.count) || 1]).nice().range([height - bottom, top]);
+  const amountPatch = (c) => ({ amount: { min: c.lo, max: Number.isFinite(c.hi) ? c.hi : "" } });
   const plot = frame(host, {
     label: "Histogram of spending payments by size",
     table: {
@@ -96,6 +100,7 @@ export function histogram(host, amountsByCategory) {
       headers: ["Size", "Payments"],
       rows: counts.map((c) => [c.label, c.count]),
       numeric: [1],
+      actions: counts.map((c) => () => ctx.select(amountPatch(c))),
     },
   });
   const svg = svgRoot(plot, width, height, "Histogram of spending payments by size");
@@ -111,14 +116,15 @@ export function histogram(host, amountsByCategory) {
       .attr("x", x(c.short)).attr("width", x.bandwidth())
       .attr("y", y(c.count)).attr("height", Math.max(0, y(0) - y(c.count)))
       .attr("rx", 2).attr("fill", "var(--series-1)");
-    hitTarget(bar, { title: c.label, rows: [{ label: "Payments", value: String(c.count) }] });
+    hitTarget(bar, { title: c.label, rows: [{ label: "Payments", value: String(c.count) }], onSelect: () => ctx.select(amountPatch(c)) });
+    markPicked(bar, isPicked(ctx.filters, amountPatch(c)));
     bars.append("text").attr("x", x(c.short) + x.bandwidth() / 2).attr("y", y(c.count) - 4).attr("text-anchor", "middle")
       .attr("font-size", 11).text(c.count);
   });
 }
 
 // ---- Dot plot: one dot per payment, by date (across) and size (up, symmetric log scale) ----
-export function dots(host, payments) {
+export function dots(host, payments, ctx) {
   if (!payments.length) return emptyState(host);
   const parse = (d) => new Date(`${d}T00:00:00`);
   const width = measure(host);
@@ -136,6 +142,7 @@ export function dots(host, payments) {
       headers: ["Date", "Merchant", "Category", "Amount"],
       rows: payments.map((p) => [dayLabel(p.date), p.merchant, catLabel(p.category_id), money(-p.amount)]),
       numeric: [3],
+      actions: payments.map((p) => () => ctx.go("transactions", { merchant: p.merchant, day: p.date })),
     },
   });
   const svg = svgRoot(plot, width, height, "Dot plot of every spending payment by date and size");
@@ -156,6 +163,7 @@ export function dots(host, payments) {
           { label: "Amount", value: money(-p.amount) },
           { label: "Category", value: catLabel(p.category_id) },
         ],
+        onSelect: () => ctx.go("transactions", { merchant: p.merchant, day: p.date }),
       });
     });
 }

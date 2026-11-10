@@ -1,7 +1,9 @@
 // Cash-flow family: stacked area, streamgraph, waterfall, 100% bars, Sankey, chord, donut.
+// Each chart takes ctx = { select, go, filters, refresh }. A click calls select(patch), which filters the
+// whole page (and toggles off when the same value is clicked again). go(view, patch) filters and opens a view.
 import {
   CATEGORY_SLOTS, KIND_COLOR, OTHER_COLOR, catColor, catLabel, compactMoney, emptyState, frame,
-  hideTip, hitTarget, measure, money, monthLabel, showTip, svgRoot, slotFor,
+  hitTarget, isPicked, markPicked, measure, money, monthLabel, subLabel, svgRoot, slotFor, tintFor,
 } from "./core.js";
 
 const M = { top: 12, right: 12, bottom: 28, left: 52 };
@@ -28,29 +30,24 @@ function drawYAxis(svg, y, width) {
     .call((g) => g.select(".domain").remove());
 }
 
-// Shared crosshair used by line and area charts: snaps to the nearest month.
-function crosshair(svg, x, months, height, readout) {
-  const line = svg.append("line").attr("class", "crosshair").attr("y1", M.top).attr("y2", height - M.bottom).style("opacity", 0);
-  svg.append("rect").attr("fill", "transparent")
-    .attr("x", M.left).attr("y", 0).attr("width", x.range()[1] - M.left + 6).attr("height", height)
-    .on("pointermove", (event) => {
-      const [px] = d3.pointer(event, svg.node());
-      let best = months[0];
-      let bestDist = Infinity;
-      for (const m of months) {
-        const d = Math.abs(x(m) - px);
-        if (d < bestDist) { best = m; bestDist = d; }
-      }
-      line.attr("x1", x(best)).attr("x2", x(best)).style("opacity", 1);
-      readout(event, best);
-    })
-    .on("pointerleave", () => { line.style("opacity", 0); })
-    .on("focus", null);
+// A full-height, transparent column per month. Clicking anywhere in the month's column selects it.
+function monthColumns(svg, x, months, width, height, ctx, rows) {
+  const step = months.length > 1 ? x(months[1]) - x(months[0]) : width - M.left - M.right;
+  svg.append("g").selectAll("rect").data(months).join("rect")
+    .attr("x", (m) => x(m) - step / 2).attr("y", M.top).attr("width", step).attr("height", height - M.top - M.bottom)
+    .attr("fill", "transparent")
+    .each(function (m) {
+      const row = rows.find((r) => r.month === m);
+      hitTarget(d3.select(this), {
+        title: monthLabel(m),
+        rows: row ? [{ label: "Spending", value: money(row.spending) }] : [],
+        onSelect: () => ctx.select({ month: m }),
+      });
+    });
 }
 
 // ---- Stacked area: spending, debt, savings stacked; income as a line ----
-export function stackedArea(host, monthly) {
-  const plot0 = host;
+export function stackedArea(host, monthly, ctx) {
   if (!monthly.length) return emptyState(host);
   const width = measure(host);
   const height = 260;
@@ -63,7 +60,7 @@ export function stackedArea(host, monthly) {
   const max = Math.max(d3.max(data, (d) => d.income) || 0, d3.max(stacked, (s) => d3.max(s, (d) => d[1])) || 0);
   const x = xBand(months, width);
   const y = yScale(max, height);
-  const plot = frame(plot0, {
+  const plot = frame(host, {
     label: "Monthly spending, debt and savings, with income",
     legend: [
       ...keys.map((k) => ({ label: labels[k], color: colors[k] })),
@@ -74,6 +71,7 @@ export function stackedArea(host, monthly) {
       headers: ["Month", "Income", "Spending", "Debt", "Savings"],
       rows: data.map((d) => [monthLabel(d.month), money(d.income), money(d.spending), money(d.debt_service), money(d.savings_out)]),
       numeric: [1, 2, 3, 4],
+      actions: data.map((d) => () => ctx.select({ month: d.month })),
     },
   });
   const svg = svgRoot(plot, width, height, "Stacked area of monthly spending, debt and savings with income line");
@@ -88,19 +86,23 @@ export function stackedArea(host, monthly) {
   svg.append("g").selectAll("circle").data(data).join("circle")
     .attr("cx", (d) => x(d.month)).attr("cy", (d) => y(d.income)).attr("r", 4)
     .attr("fill", "var(--surface)").attr("stroke", KIND_COLOR.income).attr("stroke-width", 2)
-    .attr("tabindex", 0).attr("role", "img").attr("data-hit", "")
-    .attr("aria-label", (d) => `${monthLabel(d.month)}: income ${money(d.income)}, spending ${money(d.spending)}, debt ${money(d.debt_service)}, savings ${money(d.savings_out)}`)
-    .on("pointerenter pointermove focus", (event, d) => showTip(event, monthLabel(d.month), [
-      { label: "Income", color: KIND_COLOR.income, value: money(d.income) },
-      { label: "Spending", color: KIND_COLOR.spending, value: money(d.spending) },
-      { label: "Debt", color: KIND_COLOR.debt, value: money(d.debt_service) },
-      { label: "Savings", color: KIND_COLOR.savings, value: money(d.savings_out) },
-    ]))
-    .on("pointerleave blur", () => hideTip());
+    .each(function (d) {
+      hitTarget(d3.select(this), {
+        title: monthLabel(d.month),
+        rows: [
+          { label: "Income", color: KIND_COLOR.income, value: money(d.income) },
+          { label: "Spending", color: KIND_COLOR.spending, value: money(d.spending) },
+          { label: "Debt", color: KIND_COLOR.debt, value: money(d.debt_service) },
+          { label: "Savings", color: KIND_COLOR.savings, value: money(d.savings_out) },
+        ],
+        onSelect: () => ctx.select({ month: d.month }),
+      });
+    });
+  monthColumns(svg, x, months, width, height, ctx, data);
 }
 
 // ---- Streamgraph: spending by category over months, wiggle-offset ----
-export function streamgraph(host, monthly) {
+export function streamgraph(host, monthly, ctx) {
   if (!monthly.length) return emptyState(host);
   const width = measure(host);
   const height = 280;
@@ -134,6 +136,7 @@ export function streamgraph(host, monthly) {
       headers: ["Month", ...keys.map(nameOf)],
       rows: data.map((d) => [monthLabel(d.month), ...keys.map((k) => money(d[k]))]),
       numeric: keys.map((_, i) => i + 1),
+      actions: data.map((d) => () => ctx.select({ month: d.month })),
     },
   });
   const svg = svgRoot(plot, width, height, "Streamgraph of spending by category by month");
@@ -143,13 +146,18 @@ export function streamgraph(host, monthly) {
     .attr("stroke", "var(--surface)").attr("stroke-width", 0.5)
     .each(function (s) {
       const name = nameOf(s.key);
-      hitTarget(d3.select(this), { title: name, rows: [{ label: "Spent", color: colorOf(s.key), value: money(totals[s.key] || 0) }] });
+      const category = s.key === "__other__" ? "" : s.key;
+      hitTarget(d3.select(this), {
+        title: name,
+        rows: [{ label: "Spent", color: colorOf(s.key), value: money(totals[s.key] || 0) }],
+        onSelect: category ? () => ctx.select({ category }) : null,
+      });
     });
   drawXAxis(svg, x, height, months);
 }
 
 // ---- Waterfall: monthly net as floating steps, running total line ----
-export function waterfall(host, monthly) {
+export function waterfall(host, monthly, ctx) {
   if (!monthly.length) return emptyState(host);
   const width = measure(host);
   const height = 240;
@@ -174,6 +182,7 @@ export function waterfall(host, monthly) {
       headers: ["Month", "Net", "Running total"],
       rows: steps.map((s) => [monthLabel(s.month), money(s.delta), money(s.end)]),
       numeric: [1, 2],
+      actions: steps.map((s) => () => ctx.select({ month: s.month })),
     },
   });
   const svg = svgRoot(plot, width, height, "Waterfall of monthly net with running total");
@@ -188,7 +197,11 @@ export function waterfall(host, monthly) {
     .attr("rx", 2)
     .attr("fill", (d) => (d.delta >= 0 ? "var(--series-1)" : "var(--series-2)"))
     .each(function (d) {
-      hitTarget(d3.select(this), { title: monthLabel(d.month), rows: [{ label: "Net", value: money(d.delta) }, { label: "Running total", value: money(d.end) }] });
+      hitTarget(d3.select(this), {
+        title: monthLabel(d.month),
+        rows: [{ label: "Net", value: money(d.delta) }, { label: "Running total", value: money(d.end) }],
+        onSelect: () => ctx.select({ month: d.month }),
+      });
     });
   svg.append("path").datum(steps)
     .attr("fill", "none").attr("stroke", "var(--ink-3)").attr("stroke-width", 1)
@@ -196,7 +209,7 @@ export function waterfall(host, monthly) {
 }
 
 // ---- 100% stacked bars of kind mix by month ----
-export function percentBars(host, monthly) {
+export function percentBars(host, monthly, ctx) {
   if (!monthly.length) return emptyState(host);
   const width = measure(host);
   const height = 240;
@@ -221,6 +234,7 @@ export function percentBars(host, monthly) {
       headers: ["Month", ...names],
       rows: data.map((d) => [monthLabel(d.month), ...d.raw.map((v) => money(v))]),
       numeric: [1, 2, 3],
+      actions: data.map((d) => () => ctx.select({ month: d.month })),
     },
   });
   const svg = svgRoot(plot, width, height, "100 percent stacked bars of kind mix by month");
@@ -238,48 +252,108 @@ export function percentBars(host, monthly) {
     .attr("rx", 2)
     .each(function (d) {
       const name = names[d.idx];
-      hitTarget(d3.select(this), { title: `${monthLabel(d.data.month)}`, rows: [{ label: name, color: colors[d.idx], value: money(d.data.raw[d.idx]) }] });
+      hitTarget(d3.select(this), {
+        title: `${monthLabel(d.data.month)}`,
+        rows: [{ label: name, color: colors[d.idx], value: money(d.data.raw[d.idx]) }],
+        onSelect: () => ctx.select({ month: d.data.month }),
+      });
     });
 }
 
-// ---- Donut: share of spending by category ----
-export function donut(host, byCategory, labelFor) {
-  const entries = Object.entries(byCategory).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
-  if (!entries.length) return emptyState(host);
-  const top = entries.slice(0, 7);
-  const restTotal = entries.slice(7).reduce((s, [, v]) => s + v, 0);
-  const slices = top.map(([id, v]) => ({ id, value: v, name: labelFor(id), color: catColor(id) }));
-  if (restTotal > 0) slices.push({ id: "__other__", value: restTotal, name: "Other", color: OTHER_COLOR });
-  const total = slices.reduce((s, d) => s + d.value, 0);
+// ---- Donut: where the money goes. Zooms in by filter: categories, then sub-categories, then shops. ----
+// The level comes from the shared filter, so the donut, the crumbs and the rest of the page always agree.
+// `openOther` keeps the "Other" group expanded after a click.
+let openOther = false;
+
+export function donut(host, { hierarchy, filters, select, refresh }) {
+  const level = filters.subcategory ? 3 : filters.category ? 2 : 1;
+  const root = hierarchy;
+  let items = [];
+  let centreLabel = "spent";
+  let caption = "Spending by category";
+  let total = root.value || 0;
+  let parentId = "";
+
+  if (level === 1) {
+    items = root.children.map((c) => ({ id: c.id, value: c.value, name: catLabel(c.id), color: catColor(c.id), patch: { category: c.id } }));
+  } else if (level === 2) {
+    const cat = root.children[0];
+    if (!cat) return emptyState(host);
+    total = cat.value;
+    centreLabel = "in this category";
+    caption = `Spending in ${catLabel(cat.id)}, by sub-category`;
+    items = (cat.children || []).map((s, i) => ({ id: s.id, value: s.value, name: subLabel(s.id), color: tintFor(cat.id, i), patch: { subcategory: s.id } }));
+  } else {
+    const cat = root.children[0];
+    const sub = cat?.children?.[0];
+    if (!sub) return emptyState(host);
+    total = sub.value;
+    centreLabel = "at this sub-category";
+    caption = `Spending in ${subLabel(sub.id)}, by shop`;
+    items = (sub.children || []).map((m, i) => ({ id: m.id, value: m.value, name: m.id, color: tintFor(cat.id, i), patch: { merchant: m.id } }));
+  }
+
+  // Level 1 only: the smallest categories fold into "Other" unless it has been expanded.
+  let otherGroup = null;
+  if (level === 1 && items.length > 8 && !openOther) {
+    const top = items.slice(0, 7);
+    const rest = items.slice(7);
+    otherGroup = { id: "__other__", value: rest.reduce((s, d) => s + d.value, 0), name: "Other", color: OTHER_COLOR, members: rest };
+    items = [...top, otherGroup];
+  }
+  items = items.filter((d) => d.value > 0);
+  if (!items.length) return emptyState(host);
+
   const width = measure(host);
   const size = Math.min(width, 300);
   const r = size / 2 - 4;
+  const share = (v) => `${((v / (total || 1)) * 100).toFixed(1)}%`;
+  const actionFor = (d) => {
+    if (d.id === "__other__") return () => { openOther = true; refresh(); };
+    return () => select(d.patch);
+  };
   const plot = frame(host, {
-    label: "Share of spending by category",
-    legend: slices.map((s) => ({ label: `${s.name} (${Math.round((s.value / total) * 100)}%)`, color: s.color })),
+    label: caption,
+    legend: items.map((s) => ({ label: `${s.name} (${Math.round((s.value / (total || 1)) * 100)}%)`, color: s.color })),
     table: {
-      caption: "Spending by category",
-      headers: ["Category", "Spent", "Share"],
-      rows: slices.map((s) => [s.name, money(s.value), `${((s.value / total) * 100).toFixed(1)}%`]),
+      caption,
+      headers: ["Name", "Spent", "Share"],
+      rows: items.map((s) => [s.name, money(s.value), share(s.value)]),
       numeric: [1, 2],
+      actions: items.map(actionFor),
     },
   });
-  const svg = svgRoot(plot, size, size, "Donut chart of spending by category");
+  const svg = svgRoot(plot, size, size, caption);
   svg.attr("viewBox", `0 0 ${size} ${size}`).attr("width", size).style("max-width", "100%");
   const g = svg.append("g").attr("transform", `translate(${size / 2},${size / 2})`);
   const arc = d3.arc().innerRadius(r * 0.6).outerRadius(r);
   const pie = d3.pie().value((d) => d.value).sort(null).padAngle(0.012);
-  g.selectAll("path").data(pie(slices)).join("path")
+  g.selectAll("path").data(pie(items)).join("path")
     .attr("d", arc).attr("fill", (d) => d.data.color).attr("stroke", "var(--surface)").attr("stroke-width", 2)
     .each(function (d) {
-      hitTarget(d3.select(this), { title: d.data.name, rows: [{ label: "Spent", color: d.data.color, value: money(d.data.value) }, { label: "Share", value: `${((d.data.value / total) * 100).toFixed(1)}%` }] });
+      const isOther = d.data.id === "__other__";
+      hitTarget(d3.select(this), {
+        title: isOther ? (openOther ? "Other (select to fold back)" : "Other (select to show all)") : d.data.name,
+        rows: [
+          { label: "Spent", color: d.data.color, value: money(d.data.value) },
+          { label: "Share", value: share(d.data.value) },
+        ],
+        onSelect: isOther ? () => { openOther = !openOther; refresh(); } : () => select(d.data.patch),
+      });
+      markPicked(d3.select(this), isPicked(filters, d.data.patch || {}));
     });
   g.append("text").attr("text-anchor", "middle").attr("y", -2).attr("class", "label-strong").style("font-size", "1.25rem").text(money(total));
-  g.append("text").attr("text-anchor", "middle").attr("y", 16).text("spent");
+  g.append("text").attr("text-anchor", "middle").attr("y", 16).text(centreLabel);
 }
 
 // ---- Sankey: income -> money in -> kinds -> categories, built from stated totals ----
-export function sankey(host, kpis, hierarchy, labelFor) {
+const SANKEY_PATCH = {
+  "kind:spending": { kind: "spending" },
+  "kind:debt": { kind: "debt" },
+  "kind:savings": { kind: "savings" },
+};
+
+export function sankey(host, kpis, hierarchy, labelFor, ctx) {
   const earned = (kpis.earned_income || 0) + (kpis.other_income || 0);
   if (earned <= 0 && !(kpis.spending > 0)) return emptyState(host, "Nothing to show: no income or spending in these dates.");
   if (typeof d3.sankey !== "function") return emptyState(host, "The Sankey layout did not load.");
@@ -315,6 +389,11 @@ export function sankey(host, kpis, hierarchy, labelFor) {
     .extent([[1, 6], [width - 1, height - 6]]);
   const { nodes: n, links: l } = graph({ nodes: nodes.map((d) => ({ ...d })), links: links.map((d) => ({ ...d })) });
   const total = d3.sum(n.filter((d) => d.id === "in"), (d) => d.value) || 1;
+  const nodePatch = (id) => {
+    if (id.startsWith("cat:")) return { category: id.slice(4) };
+    if (id.startsWith("src:")) return { kind: "income" };
+    return SANKEY_PATCH[id] || null;
+  };
   const plot = frame(host, {
     label: "Sankey diagram from income to categories",
     table: {
@@ -322,6 +401,10 @@ export function sankey(host, kpis, hierarchy, labelFor) {
       headers: ["From", "To", "Amount"],
       rows: links.map((k) => [nodes.find((x) => x.id === k.source).label, nodes.find((x) => x.id === k.target).label, money(k.value)]),
       numeric: [2],
+      actions: links.map((k) => {
+        const p = nodePatch(k.target);
+        return p ? () => ctx.select(p) : null;
+      }),
     },
   });
   const svg = svgRoot(plot, width, height, "Sankey of income to categories");
@@ -334,7 +417,15 @@ export function sankey(host, kpis, hierarchy, labelFor) {
     });
   const node = svg.append("g").selectAll("g").data(n).join("g");
   node.append("rect").attr("x", (d) => d.x0).attr("y", (d) => d.y0).attr("width", (d) => d.x1 - d.x0)
-    .attr("height", (d) => Math.max(1, d.y1 - d.y0)).attr("rx", 2).attr("fill", (d) => d.color);
+    .attr("height", (d) => Math.max(1, d.y1 - d.y0)).attr("rx", 2).attr("fill", (d) => d.color)
+    .each(function (d) {
+      const p = nodePatch(d.id);
+      hitTarget(d3.select(this), {
+        title: d.label,
+        rows: [{ label: "Amount", value: money(d.value) }],
+        onSelect: p ? () => ctx.select(p) : null,
+      });
+    });
   node.append("text").attr("x", (d) => (d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6))
     .attr("y", (d) => (d.y1 + d.y0) / 2).attr("dy", "0.35em")
     .attr("text-anchor", (d) => (d.x0 < width / 2 ? "start" : "end"))
@@ -342,7 +433,9 @@ export function sankey(host, kpis, hierarchy, labelFor) {
 }
 
 // ---- Chord: transfers between accounts and kinds ----
-export function chord(host, transfers) {
+const ACCOUNT_NAMES = new Set(["debit-card", "credit-card"]);
+
+export function chord(host, transfers, ctx) {
   const { names, matrix } = transfers;
   const sum = matrix.flat().reduce((s, v) => s + v, 0);
   if (!names.length || sum <= 0) return emptyState(host, "No transfers in these dates.");
@@ -350,16 +443,21 @@ export function chord(host, transfers) {
   const size = Math.min(width, 420);
   const r = size / 2 - 40;
   const label = (n) => ({ "debit-card": "Current account", "credit-card": "Credit card", "transfers.card_repayment": "Card repayment", "transfers.own_accounts": "Own accounts", "transfers.to_people": "Sent to people", "transfers.family_in": "Family in", "transfers.family_out": "Family out", "transfers.cash_withdrawal": "Cash withdrawals", "transfers.reimbursement_sent": "Reimbursements" }[n] || n);
+  // Accounts open Transactions for that account; transfer kinds open Transactions for that kind.
+  const goFor = (n) => (ACCOUNT_NAMES.has(n) ? { account: n } : { subcategory: n });
   const chords = d3.chord().padAngle(0.04)(matrix);
   const colors = names.map((_, i) => slotFor(i));
+  // Table rows and their actions come from the same list, so they stay aligned.
+  const pairs = names.flatMap((a, i) => names.map((b, j) => ({ a, b, value: matrix[i][j] }))).filter((p) => p.value > 0);
   const plot = frame(host, {
     label: "Chord diagram of transfers",
     legend: names.map((n, i) => ({ label: label(n), color: colors[i] })),
     table: {
       caption: "Transfers",
       headers: ["From", "To", "Amount"],
-      rows: names.flatMap((a, i) => names.map((b, j) => [label(a), label(b), money(matrix[i][j])])).filter((r) => r[2] !== money(0)),
+      rows: pairs.map((p) => [label(p.a), label(p.b), money(p.value)]),
       numeric: [2],
+      actions: pairs.map((p) => () => ctx.go("transactions", goFor(p.a))),
     },
   });
   const svg = svgRoot(plot, size, size, "Chord diagram of transfers between accounts and kinds");
@@ -368,13 +466,23 @@ export function chord(host, transfers) {
   g.append("g").selectAll("path").data(chords.groups).join("path")
     .attr("d", d3.arc().innerRadius(r).outerRadius(r + 8))
     .attr("fill", (d) => colors[d.index])
-    .each(function (d) { hitTarget(d3.select(this), { title: label(names[d.index]), rows: [{ label: "Total moved", value: money(d.value) }] }); });
+    .each(function (d) {
+      hitTarget(d3.select(this), {
+        title: label(names[d.index]),
+        rows: [{ label: "Total moved", value: money(d.value) }],
+        onSelect: () => ctx.go("transactions", goFor(names[d.index])),
+      });
+    });
   g.append("g").attr("fill-opacity", 0.7).selectAll("path").data(chords).join("path")
     .attr("d", d3.ribbon().radius(r))
     .attr("fill", (d) => colors[d.source.index])
     .attr("stroke", "var(--surface)").attr("stroke-width", 0.5)
     .each(function (d) {
-      hitTarget(d3.select(this), { title: `${label(names[d.source.index])} to ${label(names[d.target.index])}`, rows: [{ label: "Amount", value: money(d.source.value) }] });
+      hitTarget(d3.select(this), {
+        title: `${label(names[d.source.index])} to ${label(names[d.target.index])}`,
+        rows: [{ label: "Amount", value: money(d.source.value) }],
+        onSelect: () => ctx.go("transactions", goFor(names[d.source.index])),
+      });
     });
   // d3 chord groups carry startAngle and endAngle; the label sits at the middle of the arc.
   const mid = (d) => (d.startAngle + d.endAngle) / 2;
@@ -386,4 +494,3 @@ export function chord(host, transfers) {
     .attr("class", "label-strong").attr("font-size", 11)
     .text((d) => label(names[d.index]));
 }
-

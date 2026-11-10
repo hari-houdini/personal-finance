@@ -1,13 +1,14 @@
 // Trend family: monthly line with a three-month average, daily calendar heatmap, small multiples.
 // Trend charts use complete months only, so the partial current month cannot look like a fall.
-import { catColor, catLabel, compactMoney, dayLabel, emptyState, frame, hitTarget, KIND_COLOR, measure, money, monthLabel, svgRoot } from "./core.js";
+// Each chart takes ctx = { select }: a click filters the whole page to a month, a day or a category-month.
+import { catColor, catLabel, compactMoney, dayLabel, emptyState, frame, hitTarget, KIND_COLOR, markPicked, isPicked, measure, money, monthLabel, svgRoot } from "./core.js";
 import { completeMonths } from "./hier.js";
 
 const WEEK = 7 * 86400000;
 const M = { top: 14, right: 16, bottom: 28, left: 56 };
 
 // ---- Line: monthly spending, with a trailing three-month average ----
-export function line(host, monthly) {
+export function line(host, monthly, ctx) {
   const done = completeMonths(monthly);
   if (done.length < 2) return emptyState(host, "Needs at least two complete months in these dates.");
   const rows = done.map((m, i) => {
@@ -29,6 +30,7 @@ export function line(host, monthly) {
       headers: ["Month", "Spent", "Three-month average"],
       rows: rows.map((r) => [monthLabel(r.month), money(r.spending), r.average == null ? "n/a" : money(r.average)]),
       numeric: [1, 2],
+      actions: rows.map((r) => () => ctx.select({ month: r.month })),
     },
   });
   const svg = svgRoot(plot, width, height, "Line chart of monthly spending with a three-month average");
@@ -55,12 +57,14 @@ export function line(host, monthly) {
           { label: "Spent", color: KIND_COLOR.spending, value: money(r.spending) },
           { label: "Three-month average", value: r.average == null ? "n/a" : money(r.average) },
         ],
+        onSelect: () => ctx.select({ month: r.month }),
       });
+      markPicked(d3.select(this), isPicked(ctx.filters, { month: r.month }));
     });
 }
 
 // ---- Calendar heatmap: one square per day, Monday at the top, weeks across ----
-export function calendar(host, daily) {
+export function calendar(host, daily, ctx) {
   if (!daily.length) return emptyState(host);
   const values = new Map(daily.map((d) => [d.date, d.value]));
   const first = new Date(`${daily[0].date}T00:00:00`);
@@ -93,6 +97,7 @@ export function calendar(host, daily) {
       headers: ["Day", "Spent"],
       rows: daily.map((d) => [dayLabel(d.date), money(d.value)]),
       numeric: [1],
+      actions: daily.map((d) => () => ctx.select({ day: d.date })),
     },
   });
   const svg = svgRoot(plot, width, height, "Calendar heatmap of daily spending. Darker squares are days with more spending.");
@@ -109,13 +114,15 @@ export function calendar(host, daily) {
     .attr("width", size).attr("height", size).attr("rx", 2)
     .style("fill", (d) => fill(values.get(keyOf(d)) || 0))
     .each(function (d) {
-      const v = values.get(keyOf(d)) || 0;
-      hitTarget(d3.select(this), { title: dayLabel(keyOf(d)), rows: [{ label: "Spent", value: money(v) }] });
+      const key = keyOf(d);
+      const v = values.get(key) || 0;
+      hitTarget(d3.select(this), { title: dayLabel(key), rows: [{ label: "Spent", value: money(v) }], onSelect: v > 0 ? () => ctx.select({ day: key }) : null });
+      markPicked(d3.select(this), isPicked(ctx.filters, { day: key }));
     });
 }
 
 // ---- Small multiples: the top categories, one mini bar chart each, on one shared scale ----
-export function smallMultiples(host, monthly) {
+export function smallMultiples(host, monthly, ctx) {
   const done = completeMonths(monthly);
   if (done.length < 2) return emptyState(host, "Needs at least two complete months in these dates.");
   const totals = {};
@@ -138,6 +145,7 @@ export function smallMultiples(host, monthly) {
       headers: ["Category", "Month", "Spent"],
       rows: cats.flatMap((c) => done.map((m) => [catLabel(c), monthLabel(m.month), money(m.by_category[c] || 0)])),
       numeric: [2],
+      actions: cats.flatMap((c) => done.map((m) => () => ctx.select({ category: c, month: m.month }))),
     },
   });
   const svg = svgRoot(plot, width, height, "Small multiples: spending by category, month by month, on one shared scale");
@@ -152,7 +160,11 @@ export function smallMultiples(host, monthly) {
       .attr("height", (m) => Math.max(0, y(0) - y(m.by_category[c] || 0)))
       .attr("rx", 1).attr("fill", catColor(c))
       .each(function (m) {
-        hitTarget(d3.select(this), { title: `${catLabel(c)}, ${monthLabel(m.month)}`, rows: [{ label: "Spent", value: money(m.by_category[c] || 0) }] });
+        hitTarget(d3.select(this), {
+          title: `${catLabel(c)}, ${monthLabel(m.month)}`,
+          rows: [{ label: "Spent", value: money(m.by_category[c] || 0) }],
+          onSelect: () => ctx.select({ category: c, month: m.month }),
+        });
       });
     g.append("text").attr("x", 0).attr("y", cellH - 6).text(monthLabel(done[0].month));
     g.append("text").attr("x", cellW).attr("y", cellH - 6).attr("text-anchor", "end").text(monthLabel(done[done.length - 1].month));

@@ -1,7 +1,8 @@
 // Hierarchy and merchant family: treemap, sunburst, shop tree, network, radar, bullet, slope,
 // top-merchant bars, and the frequency-versus-average bubble chart.
+// Each chart takes ctx = { select, filters }. A click calls ctx.select(patch) to filter the whole page.
 import {
-  catColor, catLabel, compactMoney, emptyState, frame, hitTarget, measure, money, subLabel, svgRoot,
+  catColor, catLabel, compactMoney, emptyState, frame, hitTarget, isPicked, markPicked, measure, money, subLabel, svgRoot,
 } from "./core.js";
 
 const todayMonth = () => new Date().toISOString().slice(0, 7);
@@ -25,33 +26,43 @@ function nodeLabel(d) {
   return d.data.id;
 }
 
+// Depth 1 is a category, depth 2 a sub-category, depth 3 a merchant. Each depth filters the page to itself.
+function patchForNode(d) {
+  if (d.depth === 1) return { category: d.data.id };
+  if (d.depth === 2) return { subcategory: d.data.id };
+  return { merchant: d.data.id };
+}
+
 function flatten(root) {
   const rows = [];
-  root.leaves().forEach((leaf) => {
+  const leaves = root.leaves();
+  leaves.forEach((leaf) => {
     const path = leaf.ancestors().reverse().slice(1).map(nodeLabel);
     rows.push([path.join(" › "), money(leaf.value)]);
   });
-  return rows;
-}
-
-function treeTable(root, caption) {
-  return {
-    caption,
-    headers: ["Path", "Spent"],
-    rows: flatten(root),
-    numeric: [1],
-  };
+  return { rows, leaves };
 }
 
 // ---- Treemap: category -> sub-category -> merchant, area = spending ----
-export function treemap(host, data, caption = "Spending tree") {
+export function treemap(host, data, ctx, caption = "Spending tree") {
   if (!data || !data.children || !data.children.length) return emptyState(host);
   const width = measure(host);
   const height = Math.round(Math.min(560, Math.max(320, width * 0.5)));
   const root = d3.hierarchy(data).sum((d) => (d.children ? 0 : d.value)).sort((a, b) => b.value - a.value);
   d3.treemap().size([width, height]).paddingOuter(3).paddingTop((d) => (d.depth === 1 ? 20 : 2)).paddingInner(2).round(true)(root);
   const legend = root.children.slice(0, 8).map((c) => ({ label: catLabel(c.data.id), color: catColor(c.data.id) }));
-  const plot = frame(host, { label: caption, legend, table: treeTable(root, caption) });
+  const { rows, leaves } = flatten(root);
+  const plot = frame(host, {
+    label: caption,
+    legend,
+    table: {
+      caption,
+      headers: ["Path", "Spent"],
+      rows,
+      numeric: [1],
+      actions: leaves.map((l) => () => ctx.select({ merchant: l.data.id })),
+    },
+  });
   const svg = svgRoot(plot, width, height, `${caption}: treemap of spending`);
   const nodes = root.descendants().filter((d) => d.depth > 0);
   const g = svg.append("g").selectAll("g").data(nodes).join("g").attr("transform", (d) => `translate(${d.x0},${d.y0})`);
@@ -63,7 +74,13 @@ export function treemap(host, data, caption = "Spending tree") {
     .attr("fill-opacity", (d) => (d.depth === 1 ? 0.22 : d.depth === 2 ? 0.55 : 0.85))
     .attr("stroke", "var(--surface)")
     .each(function (d) {
-      hitTarget(d3.select(this), { title: nodeLabel(d), rows: [{ label: "Spent", color: catColor(nodeCategory(d)), value: money(d.value) }] });
+      const patch = patchForNode(d);
+      hitTarget(d3.select(this), {
+        title: nodeLabel(d),
+        rows: [{ label: "Spent", color: catColor(nodeCategory(d)), value: money(d.value) }],
+        onSelect: () => ctx.select(patch),
+      });
+      markPicked(d3.select(this), isPicked(ctx.filters, patch));
     });
   g.filter((d) => d.depth === 1).append("text")
     .attr("x", 6).attr("y", 14).attr("class", "label-strong").attr("font-weight", 600)
@@ -74,7 +91,7 @@ export function treemap(host, data, caption = "Spending tree") {
 }
 
 // ---- Sunburst: the same tree, radially ----
-export function sunburst(host, data, caption = "Spending tree") {
+export function sunburst(host, data, ctx, caption = "Spending tree") {
   if (!data || !data.children || !data.children.length) return emptyState(host);
   const width = measure(host);
   const size = Math.min(width, 460);
@@ -87,7 +104,12 @@ export function sunburst(host, data, caption = "Spending tree") {
     .padRadius(radius / 2)
     .innerRadius((d) => Math.sqrt(d.y0)).outerRadius((d) => Math.max(Math.sqrt(d.y0), Math.sqrt(d.y1) - 1));
   const legend = root.children.slice(0, 8).map((c) => ({ label: catLabel(c.data.id), color: catColor(c.data.id) }));
-  const plot = frame(host, { label: caption, legend, table: treeTable(root, caption) });
+  const { rows, leaves } = flatten(root);
+  const plot = frame(host, {
+    label: caption,
+    legend,
+    table: { caption, headers: ["Path", "Spent"], rows, numeric: [1], actions: leaves.map((l) => () => ctx.select({ merchant: l.data.id })) },
+  });
   const svg = svgRoot(plot, size, size, `${caption}: sunburst of spending`);
   svg.attr("viewBox", `${-radius} ${-radius} ${size} ${size}`).style("max-width", "100%");
   svg.append("g").selectAll("path").data(root.descendants().filter((d) => d.depth > 0)).join("path")
@@ -96,12 +118,18 @@ export function sunburst(host, data, caption = "Spending tree") {
     .attr("fill-opacity", (d) => (d.depth === 1 ? 0.9 : d.depth === 2 ? 0.6 : 0.4))
     .attr("stroke", "var(--surface)")
     .each(function (d) {
-      hitTarget(d3.select(this), { title: nodeLabel(d), rows: [{ label: "Spent", color: catColor(nodeCategory(d)), value: money(d.value) }] });
+      const patch = patchForNode(d);
+      hitTarget(d3.select(this), {
+        title: nodeLabel(d),
+        rows: [{ label: "Spent", color: catColor(nodeCategory(d)), value: money(d.value) }],
+        onSelect: () => ctx.select(patch),
+      });
+      markPicked(d3.select(this), isPicked(ctx.filters, patch));
     });
 }
 
 // ---- Shop tree: merchants only, sized by spend ----
-export function shopsTree(host, merchants) {
+export function shopsTree(host, merchants, ctx) {
   if (!merchants.length) return emptyState(host);
   const width = measure(host);
   const height = Math.round(Math.min(360, Math.max(220, width * 0.36)));
@@ -111,27 +139,36 @@ export function shopsTree(host, merchants) {
   const leaves = root.leaves();
   const plot = frame(host, {
     label: "Shops",
-    table: { caption: "Shops", headers: ["Shop", "Spent"], rows: leaves.map((l) => [l.data.id, money(l.value)]), numeric: [1] },
+    table: {
+      caption: "Shops",
+      headers: ["Shop", "Spent"],
+      rows: leaves.map((l) => [l.data.id, money(l.value)]),
+      numeric: [1],
+      actions: leaves.map((l) => () => ctx.select({ merchant: l.data.id })),
+    },
   });
   const svg = svgRoot(plot, width, height, "Treemap of spending by shop");
   const g = svg.append("g").selectAll("g").data(leaves).join("g").attr("transform", (d) => `translate(${d.x0},${d.y0})`);
   g.append("rect").attr("width", (d) => d.x1 - d.x0).attr("height", (d) => d.y1 - d.y0).attr("rx", 2)
     .attr("fill", "var(--series-1)").attr("fill-opacity", (d, i) => Math.max(0.35, 0.9 - i * 0.02))
     .attr("stroke", "var(--surface)")
-    .each(function (d) { hitTarget(d3.select(this), { title: d.data.id, rows: [{ label: "Spent", value: money(d.value) }] }); });
+    .each(function (d) {
+      hitTarget(d3.select(this), { title: d.data.id, rows: [{ label: "Spent", value: money(d.value) }], onSelect: () => ctx.select({ merchant: d.data.id }) });
+      markPicked(d3.select(this), isPicked(ctx.filters, { merchant: d.data.id }));
+    });
   g.append("text").attr("x", 5).attr("y", 14).attr("class", "label-strong").attr("font-size", 11)
     .text((d) => ((d.x1 - d.x0) > 70 && (d.y1 - d.y0) > 24 ? d.data.id : ""));
 }
 
 // ---- Network: merchants linked to the sub-categories they are filed under ----
-export function network(host, merchants) {
+export function network(host, merchants, ctx) {
   const top = merchants.slice(0, 18);
   if (!top.length) return emptyState(host);
   const width = measure(host);
   const height = Math.round(Math.min(460, Math.max(320, width * 0.5)));
   const subs = [...new Set(top.flatMap((m) => m.subcategories))];
   const nodes = [
-    ...top.map((m) => ({ id: `m:${m.merchant}`, label: m.merchant, kind: "merchant", value: m.value })),
+    ...top.map((m) => ({ id: `m:${m.merchant}`, label: m.merchant, kind: "merchant", value: m.value, merchant: m.merchant })),
     ...subs.map((s) => ({ id: `s:${s}`, label: subLabel(s), kind: "sub", value: 0, sub: s })),
   ];
   const links = top.flatMap((m) => m.subcategories.map((s) => ({ source: `m:${m.merchant}`, target: `s:${s}` })));
@@ -152,6 +189,7 @@ export function network(host, merchants) {
       headers: ["Merchant", "Spent", "Sub-categories"],
       rows: top.map((m) => [m.merchant, money(m.value), m.subcategories.map(subLabel).join(", ")]),
       numeric: [1],
+      actions: top.map((m) => () => ctx.select({ merchant: m.merchant })),
     },
   });
   const svg = svgRoot(plot, width, height, "Network of merchants linked to sub-categories");
@@ -162,14 +200,21 @@ export function network(host, merchants) {
     .attr("fill-opacity", (d) => (d.kind === "sub" ? 1 : 0.8))
     .attr("stroke", (d) => (d.kind === "sub" ? "var(--ink-3)" : "var(--series-1)")).attr("stroke-width", 1.5)
     .each(function (d) {
-      hitTarget(d3.select(this), { title: d.label, rows: d.kind === "merchant" ? [{ label: "Spent", value: money(d.value) }] : [{ label: "Sub-category", value: d.label }] });
+      const patch = d.kind === "sub" ? { subcategory: d.sub } : { merchant: d.merchant };
+      hitTarget(d3.select(this), {
+        title: d.label,
+        rows: d.kind === "merchant" ? [{ label: "Spent", value: money(d.value) }] : [{ label: "Sub-category", value: d.label }],
+        onSelect: () => ctx.select(patch),
+      });
     });
   g.filter((d) => d.kind === "merchant").append("text").attr("y", (d) => -radius(d) - 4).attr("text-anchor", "middle")
     .attr("class", "label-strong").attr("font-size", 11).text((d) => (d.value >= maxVal * 0.5 ? d.label : ""));
 }
 
 // ---- Radar: per-category monthly average, recent three vs earlier three ----
-export function radar(host, monthly) {
+const CATEGORY_SLOTS_ARR = ["housing", "food", "transport", "eating_out", "shopping", "subscriptions", "health", "entertainment"];
+
+export function radar(host, monthly, ctx) {
   const done = completeMonths(monthly);
   if (done.length < 2) return emptyState(host, "Needs at least two complete months in these dates.");
   const recent = done.slice(-3);
@@ -197,6 +242,7 @@ export function radar(host, monthly) {
       headers: ["Category", "Last three months", "Three before"],
       rows: axes.map((a, i) => [catLabel(a), money(series[0].values[i]), money(series[1].values[i])]),
       numeric: [1, 2],
+      actions: axes.map((a) => () => ctx.select({ category: a })),
     },
   });
   const svg = svgRoot(plot, size, size, "Radar chart of average monthly spending by category");
@@ -210,8 +256,9 @@ export function radar(host, monthly) {
     g.append("line").attr("x1", 0).attr("y1", 0).attr("x2", x).attr("y2", y).attr("stroke", "var(--grid)");
     const lx = Math.cos(angle(i)) * (r + 22);
     const ly = Math.sin(angle(i)) * (r + 22);
-    g.append("text").attr("x", lx).attr("y", ly).attr("dy", "0.35em")
+    const text = g.append("text").attr("x", lx).attr("y", ly).attr("dy", "0.35em")
       .attr("text-anchor", Math.abs(lx) < 6 ? "middle" : lx > 0 ? "start" : "end").attr("class", "label-strong").attr("font-size", 11).text(catLabel(a));
+    hitTarget(text, { title: catLabel(a), rows: [], onSelect: () => ctx.select({ category: a }) });
   });
   for (const s of series) {
     const points = s.values.map((v, i) => pt(i, v));
@@ -221,16 +268,18 @@ export function radar(host, monthly) {
     points.forEach((p, i) => {
       g.append("circle").attr("cx", p[0]).attr("cy", p[1]).attr("r", 4).attr("fill", s.color)
         .each(function () {
-          hitTarget(d3.select(this), { title: catLabel(axes[i]), rows: [{ label: s.label, color: s.color, value: money(s.values[i]) }] });
+          hitTarget(d3.select(this), {
+            title: catLabel(axes[i]),
+            rows: [{ label: s.label, color: s.color, value: money(s.values[i]) }],
+            onSelect: () => ctx.select({ category: axes[i] }),
+          });
         });
     });
   }
 }
 
-const CATEGORY_SLOTS_ARR = ["housing", "food", "transport", "eating_out", "shopping", "subscriptions", "health", "entertainment"];
-
 // ---- Bullet: latest complete month per category against the three before it ----
-export function bullet(host, monthly) {
+export function bullet(host, monthly, ctx) {
   const done = completeMonths(monthly);
   if (done.length < 2) return emptyState(host, "Needs at least two complete months in these dates.");
   const latest = done[done.length - 1];
@@ -256,21 +305,23 @@ export function bullet(host, monthly) {
       headers: ["Category", "Latest month", "Typical"],
       rows: rows.map((r) => [catLabel(r.id), money(r.value), money(r.typical)]),
       numeric: [1, 2],
+      actions: rows.map((r) => () => ctx.select({ category: r.id })),
     },
   });
   const svg = svgRoot(plot, width, height, "Bullet chart of latest month spending against the three-month average");
   rows.forEach((r, i) => {
     const y = i * rowH + 4;
-    svg.append("text").attr("x", 0).attr("y", y + 12).attr("class", "label-strong").attr("font-size", 12).text(catLabel(r.id));
+    const label = svg.append("text").attr("x", 0).attr("y", y + 12).attr("class", "label-strong").attr("font-size", 12).text(catLabel(r.id));
+    hitTarget(label, { title: catLabel(r.id), rows: [], onSelect: () => ctx.select({ category: r.id }) });
     svg.append("rect").attr("x", labelW).attr("y", y).attr("width", x(max) - labelW).attr("height", 14).attr("rx", 2).attr("fill", "var(--grid)")
-      .each(function () { hitTarget(d3.select(this), { title: catLabel(r.id), rows: [{ label: "Latest month", value: money(r.value) }, { label: "Typical", value: money(r.typical) }] }); });
+      .each(function () { hitTarget(d3.select(this), { title: catLabel(r.id), rows: [{ label: "Latest month", value: money(r.value) }, { label: "Typical", value: money(r.typical) }], onSelect: () => ctx.select({ category: r.id }) }); });
     svg.append("rect").attr("x", labelW).attr("y", y + 3).attr("width", Math.max(1, x(r.value) - labelW)).attr("height", 8).attr("rx", 2).attr("fill", catColor(r.id));
     svg.append("rect").attr("x", x(r.typical) - 1.5).attr("y", y - 2).attr("width", 3).attr("height", 18).attr("fill", "var(--ink)");
   });
 }
 
 // ---- Slope: change per category from the month before to the latest complete month ----
-export function slope(host, monthly) {
+export function slope(host, monthly, ctx) {
   const done = completeMonths(monthly);
   if (done.length < 2) return emptyState(host, "Needs at least two complete months in these dates.");
   const a = done[done.length - 2];
@@ -296,10 +347,11 @@ export function slope(host, monthly) {
         return [catLabel(c), money(p), money(q), money(q - p)];
       }),
       numeric: [1, 2, 3],
+      actions: cats.map((c) => () => ctx.select({ category: c })),
     },
   });
   const svg = svgRoot(plot, width, height, "Slope chart from the earlier month to the latest complete month");
-  svg.append("text").attr("x", xL).attr("y", 14).attr("text-anchor", "middle").attr("font-size", 11).text(b && a ? monthText(a.month) : "");
+  svg.append("text").attr("x", xL).attr("y", 14).attr("text-anchor", "middle").attr("font-size", 11).text(monthText(a.month));
   svg.append("text").attr("x", xR).attr("y", 14).attr("text-anchor", "middle").attr("font-size", 11).text(monthText(b.month));
   cats.forEach((c) => {
     const p = a.by_category[c] || 0;
@@ -307,7 +359,9 @@ export function slope(host, monthly) {
     const color = catColor(c);
     svg.append("line").attr("x1", xL).attr("x2", xR).attr("y1", y(p)).attr("y2", y(q))
       .attr("stroke", color).attr("stroke-width", 2).attr("stroke-linecap", "round")
-      .each(function () { hitTarget(d3.select(this), { title: catLabel(c), rows: [{ label: "Earlier", value: money(p) }, { label: "Latest", value: money(q) }] }); });
+      .each(function () {
+        hitTarget(d3.select(this), { title: catLabel(c), rows: [{ label: "Earlier", value: money(p) }, { label: "Latest", value: money(q) }], onSelect: () => ctx.select({ category: c }) });
+      });
     svg.append("circle").attr("cx", xL).attr("cy", y(p)).attr("r", 4).attr("fill", color);
     svg.append("circle").attr("cx", xR).attr("cy", y(q)).attr("r", 4).attr("fill", color);
     svg.append("text").attr("x", xL - 8).attr("y", y(p)).attr("dy", "0.35em").attr("text-anchor", "end").attr("font-size", 11).text(`${catLabel(c)} ${compactMoney(p)}`);
@@ -320,7 +374,7 @@ function monthText(ym) {
 }
 
 // ---- Top merchants: horizontal bars ----
-export function hbar(host, merchants) {
+export function hbar(host, merchants, ctx) {
   const top = merchants.slice(0, 15);
   if (!top.length) return emptyState(host);
   const width = measure(host);
@@ -330,15 +384,26 @@ export function hbar(host, merchants) {
   const x = d3.scaleLinear().domain([0, top[0].value]).nice().range([labelW, width - 60]);
   const plot = frame(host, {
     label: "Top merchants by spend",
-    table: { caption: "Top merchants", headers: ["Merchant", "Spent", "Visits", "Average"], rows: top.map((m) => [m.merchant, money(m.value), m.count, money(m.average)]), numeric: [1, 2, 3] },
+    table: {
+      caption: "Top merchants",
+      headers: ["Merchant", "Spent", "Visits", "Average"],
+      rows: top.map((m) => [m.merchant, money(m.value), m.count, money(m.average)]),
+      numeric: [1, 2, 3],
+      actions: top.map((m) => () => ctx.select({ merchant: m.merchant })),
+    },
   });
   const svg = svgRoot(plot, width, height, "Horizontal bars of the top merchants by spend");
   top.forEach((m, i) => {
     const y = i * rowH + 6;
     svg.append("text").attr("x", labelW - 8).attr("y", y + 11).attr("text-anchor", "end").attr("class", "label-strong").attr("font-size", 12).text(truncate(m.merchant, 26));
-    svg.append("rect").attr("x", labelW).attr("y", y).attr("width", Math.max(2, x(m.value) - labelW)).attr("height", 16).attr("rx", 2)
-      .attr("fill", "var(--series-1)")
-      .each(function () { hitTarget(d3.select(this), { title: m.merchant, rows: [{ label: "Spent", value: money(m.value) }, { label: "Visits", value: String(m.count) }, { label: "Average", value: money(m.average) }] }); });
+    const bar = svg.append("rect").attr("x", labelW).attr("y", y).attr("width", Math.max(2, x(m.value) - labelW)).attr("height", 16).attr("rx", 2)
+      .attr("fill", "var(--series-1)");
+    hitTarget(bar, {
+      title: m.merchant,
+      rows: [{ label: "Spent", value: money(m.value) }, { label: "Visits", value: String(m.count) }, { label: "Average", value: money(m.average) }],
+      onSelect: () => ctx.select({ merchant: m.merchant }),
+    });
+    markPicked(bar, isPicked(ctx.filters, { merchant: m.merchant }));
     svg.append("text").attr("x", x(m.value) + 6).attr("y", y + 12).attr("font-size", 11).text(compactMoney(m.value));
   });
 }
@@ -348,7 +413,7 @@ function truncate(s, n) {
 }
 
 // ---- Bubble: visits against average amount, area = total spend ----
-export function bubble(host, merchants) {
+export function bubble(host, merchants, ctx) {
   const pts = merchants.filter((m) => m.count > 0);
   if (!pts.length) return emptyState(host);
   const width = measure(host);
@@ -358,7 +423,13 @@ export function bubble(host, merchants) {
   const rScale = d3.scaleSqrt().domain([0, d3.max(pts, (m) => m.value) || 1]).range([3, 26]);
   const plot = frame(host, {
     label: "Bubble chart of visits against average amount per merchant",
-    table: { caption: "Merchants by visits and average", headers: ["Merchant", "Visits", "Average", "Total"], rows: pts.map((m) => [m.merchant, m.count, money(m.average), money(m.value)]), numeric: [1, 2, 3] },
+    table: {
+      caption: "Merchants by visits and average",
+      headers: ["Merchant", "Visits", "Average", "Total"],
+      rows: pts.map((m) => [m.merchant, m.count, money(m.average), money(m.value)]),
+      numeric: [1, 2, 3],
+      actions: pts.map((m) => () => ctx.select({ merchant: m.merchant })),
+    },
   });
   const svg = svgRoot(plot, width, height, "Bubble chart of merchants");
   svg.append("g").attr("class", "axis grid").attr("transform", `translate(46,0)`)
@@ -371,9 +442,16 @@ export function bubble(host, merchants) {
     const cx = x(m.count);
     const cy = y(m.average);
     const cell = g.append("g");
-    cell.append("circle").attr("cx", cx).attr("cy", cy).attr("r", rScale(m.value)).attr("fill", "var(--series-1)").attr("fill-opacity", 0.55).attr("stroke", "var(--series-1)");
+    const dot = cell.append("circle").attr("cx", cx).attr("cy", cy).attr("r", rScale(m.value)).attr("fill", "var(--series-1)").attr("fill-opacity", 0.55).attr("stroke", "var(--series-1)");
+    markPicked(dot, isPicked(ctx.filters, { merchant: m.merchant }));
     cell.append("circle").attr("cx", cx).attr("cy", cy).attr("r", 14).attr("fill", "transparent")
-      .each(function () { hitTarget(d3.select(this), { title: m.merchant, rows: [{ label: "Visits", value: String(m.count) }, { label: "Average", value: money(m.average) }, { label: "Total", value: money(m.value) }] }); });
+      .each(function () {
+        hitTarget(d3.select(this), {
+          title: m.merchant,
+          rows: [{ label: "Visits", value: String(m.count) }, { label: "Average", value: money(m.average) }, { label: "Total", value: money(m.value) }],
+          onSelect: () => ctx.select({ merchant: m.merchant }),
+        });
+      });
     // Labels near the right edge flip to the left of their bubble so they stay inside the plot.
     const nearRight = cx > width * 0.7;
     if (i < 5) cell.append("text")

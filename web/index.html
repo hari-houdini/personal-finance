@@ -49,6 +49,8 @@
       <button type="button" class="btn" id="btn-import">Re-read statements</button>
       <button type="button" class="btn" id="btn-resolve">Identify merchants</button>
     </div>
+
+    <div class="chips" id="chips" role="region" aria-label="Active filters" aria-live="polite"></div>
   </header>
 
   <div class="shell">
@@ -74,6 +76,7 @@
         <h1 id="h-overview">Overview</h1>
         <p class="lede">Money in, money out, and what is left, for the dates chosen above.</p>
         <dl class="figures" id="kpis" aria-label="Headline figures"></dl>
+        <section class="kpi-detail" id="kpi-detail" aria-labelledby="kpi-detail-title" hidden></section>
         <div class="panels">
           <article class="panel wide" aria-labelledby="t-cash-monthly">
             <header><div><h2 id="t-cash-monthly">Monthly cash flow</h2><p class="desc">Income, spending, debt and savings by month.</p></div></header>
@@ -81,6 +84,7 @@
           </article>
           <article class="panel half" aria-labelledby="t-mix">
             <header><div><h2 id="t-mix">Where the money goes</h2><p class="desc">Share of spending by category.</p></div></header>
+            <nav class="crumbs" id="donut-crumbs" aria-label="Zoom path for where the money goes"></nav>
             <div class="chart-host" data-chart="donut" data-host="ov-donut"></div>
           </article>
           <article class="panel half" aria-labelledby="t-net">

@@ -38,6 +38,7 @@ Every transaction is assigned one sub-category from this tree.
 
 - **Category** (`categories[]`): a top-level group. Has `id`, `name` and a `kind`.
 - **Sub-category** (`subcategories[]`): a child of a category. Has an `id` and a `name`. IDs are unique across the file. By convention the ID starts with the category's ID followed by a dot, for example `food.supermarket`. The exception is the `gifts.*` sub-categories under `gifts_donations`, so match the existing IDs rather than the pattern.
+- **Help** (`help`, optional, on categories and sub-categories): a short plain-English explanation of the name, for example "Money you paid back on loans." The dashboard shows it as the hover tip on the filter chip for that category or sub-category. The classifier does not read this field, so adding or editing it never changes any transaction's category.
 - **Kind**: what the money is for. It decides how a transaction counts in the analytics. The meaning of each kind is in the [glossary](../GLOSSARY.md) and in the docstring of `app/analytics.py`.
 
 Sub-category IDs are stored in reports and in your overrides and rules. **Do not rename an ID that already has data against it.** Add a new one and move the old transactions with the dashboard instead. Renaming the display `name` is safe.

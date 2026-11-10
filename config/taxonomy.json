@@ -19,6 +19,7 @@
       "id": "income",
       "name": "Income",
       "kind": "income",
+      "help": "Money that comes in to you.",
       "subcategories": [
         {
           "id": "income.salary",
@@ -54,6 +55,7 @@
       "id": "housing",
       "name": "Housing",
       "kind": "essential",
+      "help": "Where you live: rent, home bills and things for the home.",
       "subcategories": [
         {
           "id": "housing.rent",
@@ -105,6 +107,7 @@
       "id": "food",
       "name": "Food & Groceries",
       "kind": "essential",
+      "help": "Food you buy to cook at home.",
       "subcategories": [
         {
           "id": "food.supermarket",
@@ -120,7 +123,8 @@
         },
         {
           "id": "food.bakery_specialty",
-          "name": "Bakery & specialty food"
+          "name": "Bakery & specialty food",
+          "help": "Bread, cakes and pastries from a bakery."
         },
         {
           "id": "food.online_grocery",
@@ -132,6 +136,7 @@
       "id": "eating_out",
       "name": "Eating Out & Drinks",
       "kind": "discretionary",
+      "help": "Food and drinks you buy ready to eat or drink, out or delivered.",
       "subcategories": [
         {
           "id": "eating_out.restaurants",
@@ -143,11 +148,13 @@
         },
         {
           "id": "eating_out.fast_food",
-          "name": "Fast food"
+          "name": "Fast food",
+          "help": "Quick food you grab and go, like sandwiches, chips and burgers."
         },
         {
           "id": "eating_out.cafes_coffee",
-          "name": "Coffee & cafés"
+          "name": "Coffee & cafés",
+          "help": "Coffee, tea, cake and light bites from a café or coffee shop."
         },
         {
           "id": "eating_out.pubs_bars",
@@ -163,6 +170,7 @@
       "id": "transport",
       "name": "Transport",
       "kind": "essential",
+      "help": "Getting around: trains, buses, petrol and car costs.",
       "subcategories": [
         {
           "id": "transport.public",
@@ -202,6 +210,7 @@
       "id": "travel",
       "name": "Travel & Holidays",
       "kind": "discretionary",
+      "help": "Trips and holidays away from home.",
       "subcategories": [
         {
           "id": "travel.flights",
@@ -233,6 +242,7 @@
       "id": "health",
       "name": "Health & Wellbeing",
       "kind": "essential",
+      "help": "Looking after your body and your mind.",
       "subcategories": [
         {
           "id": "health.pharmacy",
@@ -264,6 +274,7 @@
       "id": "personal_care",
       "name": "Personal Care",
       "kind": "discretionary",
+      "help": "Looking and feeling clean: hair, make-up, soap.",
       "subcategories": [
         {
           "id": "personal_care.hair_barber",
@@ -287,6 +298,7 @@
       "id": "shopping",
       "name": "Shopping",
       "kind": "discretionary",
+      "help": "Things you buy, some you need and some you could skip.",
       "subcategories": [
         {
           "id": "shopping.clothing_footwear",
@@ -322,6 +334,7 @@
       "id": "entertainment",
       "name": "Entertainment & Leisure",
       "kind": "discretionary",
+      "help": "Fun things to do, like the cinema, games and days out.",
       "subcategories": [
         {
           "id": "entertainment.cinema_theatre",
@@ -349,6 +362,7 @@
       "id": "subscriptions",
       "name": "Subscriptions & Memberships",
       "kind": "discretionary",
+      "help": "Things you pay for again and again, every month.",
       "subcategories": [
         {
           "id": "subscriptions.streaming",
@@ -376,6 +390,7 @@
       "id": "education",
       "name": "Education & Learning",
       "kind": "discretionary",
+      "help": "Money spent on learning new things.",
       "subcategories": [
         {
           "id": "education.courses_tuition",
@@ -395,6 +410,7 @@
       "id": "family",
       "name": "Family & Children",
       "kind": "essential",
+      "help": "Things you pay for your children.",
       "subcategories": [
         {
           "id": "family.childcare",
@@ -426,6 +442,7 @@
       "id": "pets",
       "name": "Pets",
       "kind": "essential",
+      "help": "Looking after your pets.",
       "subcategories": [
         {
           "id": "pets.food",
@@ -453,6 +470,7 @@
       "id": "work",
       "name": "Work & Business",
       "kind": "essential",
+      "help": "Things you buy to do your job.",
       "subcategories": [
         {
           "id": "work.equipment",
@@ -480,6 +498,7 @@
       "id": "debt",
       "name": "Debt & Borrowing",
       "kind": "debt",
+      "help": "Money you pay back on loans and borrowing.",
       "subcategories": [
         {
           "id": "debt.personal_loan",
@@ -487,7 +506,8 @@
         },
         {
           "id": "debt.credit_card_minimum",
-          "name": "Credit card repayments (see Transfers for card payments)"
+          "name": "Credit card repayments (see Transfers for card payments)",
+          "help": "Paying off a credit card bill from the card. Counted as a card repayment, not spending."
         },
         {
           "id": "debt.student_loan",
@@ -511,6 +531,7 @@
       "id": "savings",
       "name": "Savings & Investments",
       "kind": "savings",
+      "help": "Money you put aside for later. Not spent.",
       "subcategories": [
         {
           "id": "savings.emergency_fund",
@@ -518,7 +539,8 @@
         },
         {
           "id": "savings.sinking_fund",
-          "name": "Sinking fund (annual costs)"
+          "name": "Sinking fund (annual costs)",
+          "help": "Money set aside each month for bills that come once a year."
         },
         {
           "id": "savings.general",
@@ -542,6 +564,7 @@
       "id": "insurance",
       "name": "Insurance",
       "kind": "essential",
+      "help": "Money paid so you are covered if something goes wrong.",
       "subcategories": [
         {
           "id": "insurance.life",
@@ -569,6 +592,7 @@
       "id": "taxes",
       "name": "Taxes & Government",
       "kind": "tax",
+      "help": "Money paid to the government.",
       "subcategories": [
         {
           "id": "taxes.income_tax",
@@ -600,6 +624,7 @@
       "id": "fees",
       "name": "Bank & Card Fees",
       "kind": "fee",
+      "help": "Charges from your bank or card. They buy you nothing.",
       "subcategories": [
         {
           "id": "fees.account",
@@ -607,7 +632,8 @@
         },
         {
           "id": "fees.foreign_transaction",
-          "name": "Foreign transaction fees"
+          "name": "Foreign transaction fees",
+          "help": "Extra charge for paying in another currency."
         },
         {
           "id": "fees.atm",
@@ -631,6 +657,7 @@
       "id": "gifts_donations",
       "name": "Gifts & Donations",
       "kind": "discretionary",
+      "help": "Presents you give and money given to charity.",
       "subcategories": [
         {
           "id": "gifts.given",
@@ -654,6 +681,7 @@
       "id": "transfers",
       "name": "Transfers",
       "kind": "transfer",
+      "help": "Money moved between your own accounts, or sent to people. Not spending.",
       "subcategories": [
         {
           "id": "transfers.own_accounts",
@@ -669,7 +697,8 @@
         },
         {
           "id": "transfers.card_repayment",
-          "name": "Card repayment (from current account)"
+          "name": "Card repayment (from current account)",
+          "help": "Money from your current account paying off your credit card. Not spending."
         },
         {
           "id": "transfers.cash_withdrawal",
@@ -677,7 +706,8 @@
         },
         {
           "id": "transfers.to_people",
-          "name": "Sent to people (peer payments)"
+          "name": "Sent to people (peer payments)",
+          "help": "Money sent to a person, for example with a payment app."
         },
         {
           "id": "transfers.reimbursement_sent",
@@ -689,6 +719,7 @@
       "id": "refunds",
       "name": "Refunds & Reversals",
       "kind": "refund",
+      "help": "Money given back to you after a return or a mistake.",
       "subcategories": [
         {
           "id": "refunds.merchant",
@@ -700,7 +731,8 @@
         },
         {
           "id": "refunds.reversal",
-          "name": "Reversals"
+          "name": "Reversals",
+          "help": "A payment that was undone, so the money came back."
         }
       ]
     },
@@ -708,6 +740,7 @@
       "id": "review",
       "name": "Needs Review",
       "kind": "review",
+      "help": "The app is not sure yet. Tell it what this is.",
       "subcategories": [
         {
           "id": "review.unclassified",

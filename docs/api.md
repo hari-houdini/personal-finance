@@ -36,6 +36,9 @@ Most read endpoints accept the same filters. They are applied together.
 | `subcategory` | string | Sub-category ID, for example `food.supermarket` |
 | `merchant` | string | Merchant name as shown in the dashboard |
 | `account` | string | `credit-card` or `debit-card` |
+| `kind` | string | A kind group: `income`, `spending` (essential, discretionary, fee, tax and refunds), `outflow` (everything that leaves except transfers), `debt` or `savings`. Any single kind from the taxonomy also works |
+| `min_amount` | number | Smallest payment size, as a positive magnitude. Money in and money out are both compared by size |
+| `max_amount` | number | Largest payment size, as a positive magnitude, inclusive |
 
 Category and sub-category IDs come from `config/taxonomy.json`. `GET /api/meta` returns the full taxonomy.
 
@@ -68,7 +71,10 @@ When no reports exist, `ready` is `false` and `count` and the dates are absent. 
 
 Everything the Overview, Cash flow, Categories, Merchants, Trends and Distributions views draw from. Accepts the [filters](#filters).
 
-The response has these top-level keys: `kpis`, `monthly`, `hierarchy`, `merchants`, `daily`, `amounts_by_category`, `flows`, `transfers`. The definitions of each money figure are in the docstring of [`app/analytics.py`](../app/analytics.py).
+The response has these top-level keys: `kpis`, `previous`, `breakdown`, `monthly`, `hierarchy`, `merchants`, `daily`, `amounts_by_category`, `flows`, `transfers`. The definitions of each money figure are in the docstring of [`app/analytics.py`](../app/analytics.py).
+
+- `previous` is the same measures for the equal-length period that ends the day before `from`, with its own `from`, `to` and `kpis`. It is `null` when `from` or `to` is missing, or when that period starts before the first transaction. The dashboard uses it for the up and down arrows on the Overview figures.
+- `breakdown` explains the Overview figures: `earned_income` (by source and the largest payments in), `spending` (by category, each with its sub-categories), `debt_service` (by sub-category) and `net` (money in and money out, each with its largest payments).
 
 #### `GET /api/transactions`
 
@@ -76,7 +82,7 @@ Paged list of transactions, newest first.
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
-| `from`, `to`, `category`, `subcategory`, `merchant`, `account` | | | [Filters](#filters) |
+| `from`, `to`, `category`, `subcategory`, `merchant`, `account`, `kind`, `min_amount`, `max_amount` | | | [Filters](#filters) |
 | `review` | bool | `false` | Only transactions flagged "needs review" |
 | `q` | string | | Case-insensitive match on description or merchant |
 | `limit` | int | `200` | 1 to 2000 |

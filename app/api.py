@@ -30,11 +30,25 @@ store = analytics.Store(REPORTS_DIR / "transactions.json")
 app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
 
 
-def _rows(date_from, date_to, category, subcategory, merchant, account):
+def _rows(f: dict):
     data = store.get()
     if data is None:
         raise HTTPException(409, "No reports yet. Run the import first (POST /api/import).")
-    return analytics.filter_rows(data.transactions, date_from, date_to, category, subcategory, merchant, account)
+    return data, analytics.filter_rows(data.transactions, **f)
+
+
+def _filters(date_from, date_to, category, subcategory, merchant, account, kind, min_amount, max_amount) -> dict:
+    return {
+        "date_from": date_from,
+        "date_to": date_to,
+        "category": category,
+        "subcategory": subcategory,
+        "merchant": merchant,
+        "account": account,
+        "kind": kind,
+        "min_amount": min_amount,
+        "max_amount": max_amount,
+    }
 
 
 @app.get("/")
@@ -71,9 +85,19 @@ def get_analytics(
     subcategory: str | None = None,
     merchant: str | None = None,
     account: str | None = None,
+    kind: str | None = None,
+    min_amount: float | None = Query(None, ge=0),
+    max_amount: float | None = Query(None, ge=0),
 ) -> dict:
-    rows = _rows(date_from, date_to, category, subcategory, merchant, account)
-    return analytics.analytics(rows)
+    f = _filters(date_from, date_to, category, subcategory, merchant, account, kind, min_amount, max_amount)
+    data, rows = _rows(f)
+    dates = [t["date"] for t in data.transactions]
+    window = analytics.previous_window(date_from, date_to, min(dates) if dates else None)
+    previous_rows = None
+    if window is not None:
+        prev_filters = {**f, "date_from": window[0], "date_to": window[1]}
+        previous_rows = analytics.filter_rows(data.transactions, **prev_filters)
+    return analytics.analytics(rows, previous_rows, window)
 
 
 @app.get("/api/transactions")
@@ -84,12 +108,15 @@ def transactions(
     subcategory: str | None = None,
     merchant: str | None = None,
     account: str | None = None,
+    kind: str | None = None,
+    min_amount: float | None = Query(None, ge=0),
+    max_amount: float | None = Query(None, ge=0),
     review: bool = False,
     q: str | None = None,
     limit: int = Query(200, ge=1, le=2000),
     offset: int = Query(0, ge=0),
 ) -> dict:
-    rows = _rows(date_from, date_to, category, subcategory, merchant, account)
+    _, rows = _rows(_filters(date_from, date_to, category, subcategory, merchant, account, kind, min_amount, max_amount))
     if review:
         rows = [r for r in rows if r["flags"]["needs_review"]]
     if q:

@@ -14,10 +14,22 @@ from __future__ import annotations
 import json
 from collections import defaultdict
 from dataclasses import dataclass
+from datetime import date, timedelta
 from pathlib import Path
 from threading import Lock
 
 SPEND_KINDS = {"essential", "discretionary", "fee", "tax"}
+OUTFLOW_KINDS = SPEND_KINDS | {"debt", "savings"}
+
+# Kind filters the dashboard can apply. Group names expand to sets of rows; any other value
+# is matched against the row's own kind (for example "essential" or "transfer").
+KIND_GROUPS = {
+    "income": lambda r: r["flags"]["is_income"],
+    "spending": lambda r: r["kind"] in SPEND_KINDS or r["kind"] == "refund",
+    "outflow": lambda r: r["kind"] in OUTFLOW_KINDS,
+    "debt": lambda r: r["kind"] == "debt",
+    "savings": lambda r: r["kind"] == "savings",
+}
 
 
 @dataclass
@@ -54,7 +66,14 @@ def filter_rows(
     subcategory: str | None = None,
     merchant: str | None = None,
     account: str | None = None,
+    kind: str | None = None,
+    min_amount: float | None = None,
+    max_amount: float | None = None,
 ) -> list[dict]:
+    """Keep the rows that match every filter that is set. Amounts are compared as magnitudes."""
+    kind_test = None
+    if kind:
+        kind_test = KIND_GROUPS.get(kind) or (lambda r, k=kind: r["kind"] == k)
     out = []
     for r in rows:
         if date_from and r["date"] < date_from:
@@ -69,8 +88,33 @@ def filter_rows(
             continue
         if account and r["account"] != account:
             continue
+        if kind_test and not kind_test(r):
+            continue
+        magnitude = abs(r["amount"])
+        if min_amount is not None and magnitude < min_amount:
+            continue
+        if max_amount is not None and magnitude > max_amount:
+            continue
         out.append(r)
     return out
+
+
+def previous_window(date_from: str | None, date_to: str | None, first_date: str | None) -> tuple[str, str] | None:
+    """The period of the same length that ends the day before date_from.
+
+    Returns None when either end is open ("All"), or when the earlier period starts before the
+    first transaction in the reports, because a partial comparison would mislead.
+    """
+    if not date_from or not date_to:
+        return None
+    start = date.fromisoformat(date_from)
+    end = date.fromisoformat(date_to)
+    days = (end - start).days + 1
+    prev_end = start - timedelta(days=1)
+    prev_start = prev_end - timedelta(days=days - 1)
+    if first_date is None or prev_start.isoformat() < first_date:
+        return None
+    return prev_start.isoformat(), prev_end.isoformat()
 
 
 def _money(value: float) -> float:
@@ -107,6 +151,73 @@ def kpis(rows: list[dict]) -> dict:
     }
 
 
+def _row_summary(r: dict) -> dict:
+    return {"merchant": r["merchant"], "date": r["date"], "amount": _money(r["amount"]), "subcategory_id": r["subcategory_id"]}
+
+
+def breakdown(rows: list[dict], top: int = 5) -> dict:
+    """What makes up each headline figure, so the dashboard can explain it in one click."""
+    earned_rows = [r for r in rows if r["flags"]["is_earned_income"]]
+    by_source: dict[str, float] = defaultdict(float)
+    for r in earned_rows:
+        by_source[r["subcategory_id"]] += r["amount"]
+
+    spend_tree: dict[str, dict] = {}
+    for r in rows:
+        if r["kind"] not in SPEND_KINDS and r["kind"] != "refund":
+            continue
+        cat = spend_tree.setdefault(r["category_id"], {"id": r["category_id"], "value": 0.0, "children": {}})
+        value = -r["amount"]
+        cat["value"] += value
+        sub = cat["children"].setdefault(r["subcategory_id"], {"id": r["subcategory_id"], "value": 0.0})
+        sub["value"] += value
+
+    debt_by_sub: dict[str, float] = defaultdict(float)
+    for r in rows:
+        if r["kind"] == "debt":
+            debt_by_sub[r["subcategory_id"]] += -r["amount"]
+
+    money_rows = [r for r in rows if not r["flags"]["is_transfer"]]
+    money_in = sum(r["amount"] for r in money_rows if r["amount"] > 0)
+    money_out = -sum(r["amount"] for r in money_rows if r["amount"] < 0)
+    largest_in = sorted((r for r in money_rows if r["amount"] > 0), key=lambda r: -r["amount"])[:top]
+    largest_out = sorted((r for r in money_rows if r["amount"] < 0), key=lambda r: r["amount"])[:top]
+
+    def sorted_children(node: dict) -> list[dict]:
+        return sorted(
+            ({"id": c["id"], "value": _money(c["value"])} for c in node["children"].values()),
+            key=lambda c: -c["value"],
+        )
+
+    return {
+        "earned_income": {
+            "by_source": sorted(
+                ({"id": k, "value": _money(v)} for k, v in by_source.items()),
+                key=lambda c: -c["value"],
+            ),
+            "largest": [_row_summary(r) for r in sorted(earned_rows, key=lambda r: -r["amount"])[:top]],
+        },
+        "spending": {
+            "by_category": sorted(
+                ({"id": c["id"], "value": _money(c["value"]), "children": sorted_children(c)} for c in spend_tree.values()),
+                key=lambda c: -c["value"],
+            ),
+        },
+        "debt_service": {
+            "by_subcategory": sorted(
+                ({"id": k, "value": _money(v)} for k, v in debt_by_sub.items()),
+                key=lambda c: -c["value"],
+            ),
+        },
+        "net": {
+            "money_in": _money(money_in),
+            "money_out": _money(money_out),
+            "largest_in": [_row_summary(r) for r in largest_in],
+            "largest_out": [_row_summary(r) for r in largest_out],
+        },
+    }
+
+
 def monthly(rows: list[dict]) -> list[dict]:
     buckets: dict[str, list[dict]] = defaultdict(list)
     for r in rows:
@@ -124,7 +235,7 @@ def monthly(rows: list[dict]) -> list[dict]:
 
 
 def hierarchy(rows: list[dict]) -> dict:
-    """category -> sub-category -> merchant tree of spending (for treemap and sunburst)."""
+    """category -> sub-category -> merchant tree of spending (for treemap, sunburst and donut)."""
     tree: dict[str, dict] = {}
     for r in rows:
         if r["kind"] not in SPEND_KINDS and r["kind"] != "refund":
@@ -137,6 +248,7 @@ def hierarchy(rows: list[dict]) -> dict:
         merch = sub["children"].setdefault(r["merchant"], {"id": r["merchant"], "value": 0.0, "count": 0})
         merch["value"] += value
         merch["count"] = merch.get("count", 0) + 1
+
     def finish(node: dict) -> dict:
         children = node.get("children")
         out = {"id": node["id"], "value": _money(node["value"])}
@@ -145,7 +257,12 @@ def hierarchy(rows: list[dict]) -> dict:
         if children:
             out["children"] = sorted((finish(c) for c in children.values()), key=lambda c: -c["value"])
         return out
-    return {"id": "spending", "value": _money(sum(c["value"] for c in tree.values())), "children": sorted((finish(c) for c in tree.values()), key=lambda c: -c["value"])}
+
+    return {
+        "id": "spending",
+        "value": _money(sum(c["value"] for c in tree.values())),
+        "children": sorted((finish(c) for c in tree.values()), key=lambda c: -c["value"]),
+    }
 
 
 def merchants(rows: list[dict], limit: int = 40) -> list[dict]:
@@ -218,10 +335,19 @@ def transfers(rows: list[dict]) -> dict:
     return {"names": names, "matrix": matrix}
 
 
-def analytics(rows: list[dict]) -> dict:
-    """Everything a dashboard view needs, for one filtered set of rows."""
+def analytics(rows: list[dict], previous_rows: list[dict] | None = None, previous_span: tuple[str, str] | None = None) -> dict:
+    """Everything a dashboard view needs, for one filtered set of rows.
+
+    previous_rows are the same filters applied to the earlier period. When they are not given,
+    `previous` is null and the dashboard shows that there is nothing to compare with.
+    """
+    previous = None
+    if previous_rows is not None and previous_span is not None:
+        previous = {"from": previous_span[0], "to": previous_span[1], "kpis": kpis(previous_rows)}
     return {
         "kpis": kpis(rows),
+        "previous": previous,
+        "breakdown": breakdown(rows),
         "monthly": monthly(rows),
         "hierarchy": hierarchy(rows),
         "merchants": merchants(rows),

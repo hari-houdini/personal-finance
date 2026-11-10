@@ -1,10 +1,11 @@
 // Stability family: savings-rate and emergency-fund gauges, debt payments, and monthly surplus against target.
 // Every figure comes from /api/stability. Balances the user enters replace the transfer-based estimates.
-import { emptyState, frame, hitTarget, KIND_COLOR, measure, money, monthLabel, pct, subLabel, svgRoot, compactMoney } from "./core.js";
+// Each chart takes ctx = { select, go }: gauges open the transactions behind them, bars filter the page.
+import { emptyState, frame, hitTarget, KIND_COLOR, measure, money, monthLabel, pct, subLabel, svgRoot, compactMoney, markPicked, isPicked } from "./core.js";
 import { completeMonths } from "./hier.js";
 
 // Half-circle gauge. Angles run from 9 o'clock (min) to 3 o'clock (max) over the top.
-function gauge(host, { value, min, max, ticks = [], label, centre, table }) {
+function gauge(host, { value, min, max, ticks = [], label, centre, table, onSelect, hint }) {
   const width = measure(host);
   const size = Math.min(width, 320);
   const r = size / 2 - 14;
@@ -15,8 +16,8 @@ function gauge(host, { value, min, max, ticks = [], label, centre, table }) {
   const g = svg.append("g").attr("transform", `translate(${size / 2},${r + 14})`);
   const arc = d3.arc().innerRadius(r - 16).outerRadius(r);
   g.append("path").attr("d", arc({ startAngle: -Math.PI / 2, endAngle: Math.PI / 2 })).attr("fill", "var(--grid)");
-  g.append("path").attr("d", arc({ startAngle: -Math.PI / 2, endAngle: angle(value) })).attr("fill", "var(--series-1)")
-    .each(function () { hitTarget(d3.select(this), { title: label, rows: [{ label: "Now", value: centre }] }); });
+  const fillArc = g.append("path").attr("d", arc({ startAngle: -Math.PI / 2, endAngle: angle(value) })).attr("fill", "var(--series-1)");
+  hitTarget(fillArc, { title: label, rows: [{ label: "Now", value: centre }], onSelect });
   for (const t of ticks) {
     const a = angle(t.value);
     const sx = Math.sin(a);
@@ -26,10 +27,11 @@ function gauge(host, { value, min, max, ticks = [], label, centre, table }) {
     g.append("text").attr("x", sx * (r + 14)).attr("y", cy * (r + 14) + 4).attr("text-anchor", "middle").attr("font-size", 11).text(t.label);
   }
   g.append("text").attr("y", -r * 0.22).attr("text-anchor", "middle").attr("class", "label-strong").style("font-size", "1.5rem").text(centre);
+  if (hint) svg.attr("data-tip-hint", hint);
 }
 
 // ---- Savings rate: share of earned income left after spending and debt ----
-export function rateGauge(host, stab) {
+export function rateGauge(host, stab, ctx) {
   const rate = stab.savings_rate;
   const target = stab.savings_rate_target ?? 0.2;
   if (rate == null) return emptyState(host, "No earned income in the baseline window, so the rate cannot be worked out.");
@@ -41,6 +43,7 @@ export function rateGauge(host, stab) {
     ticks: [{ value: target, label: `${Math.round(target * 100)}% target` }],
     label: "Gauge of savings rate against the target",
     centre: pct(rate),
+    onSelect: () => ctx.go("transactions", { kind: "income" }),
     table: {
       caption: "Savings rate",
       headers: ["Measure", "Value"],
@@ -51,12 +54,13 @@ export function rateGauge(host, stab) {
         ["Gap to target a month", money(gap)],
       ],
       numeric: [1],
+      actions: [null, null, null, null],
     },
   });
 }
 
 // ---- Emergency fund: months of essential spending the balance covers, against the 3 and 6 month targets ----
-export function fundGauge(host, stab) {
+export function fundGauge(host, stab, ctx) {
   const ef = stab.emergency_fund;
   if (ef.months_cover == null) return emptyState(host, "Needs essential spending in the baseline window.");
   gauge(host, {
@@ -69,6 +73,7 @@ export function fundGauge(host, stab) {
     ],
     label: "Gauge of emergency fund months covered",
     centre: `${ef.months_cover.toFixed(1)} mo`,
+    onSelect: () => ctx.go("transactions", { kind: "savings" }),
     table: {
       caption: "Emergency fund",
       headers: ["Measure", "Value"],
@@ -85,7 +90,7 @@ export function fundGauge(host, stab) {
 }
 
 // ---- Debt payments: average monthly payment per debt type over the baseline window ----
-export function debtBars(host, stab) {
+export function debtBars(host, stab, ctx) {
   const items = stab.debt?.monthly_payments || [];
   if (!items.length) return emptyState(host, "No debt payments in the baseline window.");
   const width = measure(host);
@@ -101,6 +106,7 @@ export function debtBars(host, stab) {
       headers: ["Debt type", "Monthly payment"],
       rows: items.map((d) => [subLabel(d.subcategory_id), money(d.monthly_payment)]),
       numeric: [1],
+      actions: items.map((d) => () => ctx.go("transactions", { subcategory: d.subcategory_id })),
     },
   });
   const svg = svgRoot(plot, width, height, "Bars of monthly debt payments by type");
@@ -108,13 +114,17 @@ export function debtBars(host, stab) {
     const y = i * rowH + 2;
     svg.append("text").attr("x", 0).attr("y", y + 12).attr("class", "label-strong").attr("font-size", 12).text(subLabel(d.subcategory_id));
     const bar = svg.append("rect").attr("x", 0).attr("y", y + 18).attr("width", Math.max(2, x(d.monthly_payment))).attr("height", barH).attr("rx", 2).attr("fill", KIND_COLOR.debt);
-    hitTarget(bar, { title: subLabel(d.subcategory_id), rows: [{ label: "A month", value: money(d.monthly_payment) }] });
+    hitTarget(bar, {
+      title: subLabel(d.subcategory_id),
+      rows: [{ label: "A month", value: money(d.monthly_payment) }],
+      onSelect: () => ctx.go("transactions", { subcategory: d.subcategory_id }),
+    });
     svg.append("text").attr("x", x(d.monthly_payment) + 6).attr("y", y + 18 + barH - 3).attr("font-size", 11).text(compactMoney(d.monthly_payment));
   });
 }
 
 // ---- Monthly surplus: earned income minus spending and debt, per complete month, against the savings target ----
-export function runway(host, stab) {
+export function runway(host, stab, ctx) {
   const done = completeMonths(stab.series || []);
   if (!done.length) return emptyState(host, "Needs at least one complete month.");
   const target = stab.savings_rate_target ?? 0.2;
@@ -145,6 +155,7 @@ export function runway(host, stab) {
       headers: ["Month", "Earned", "Spending", "Debt", "Surplus", "Target"],
       rows: rows.map((r) => [monthLabel(r.month), money(r.earned), money(r.spending), money(r.debt), money(r.surplus), money(r.target)]),
       numeric: [1, 2, 3, 4, 5],
+      actions: rows.map((r) => () => ctx.select({ month: r.month })),
     },
   });
   const svg = svgRoot(plot, width, height, "Bars of monthly surplus against the savings target");
@@ -161,7 +172,9 @@ export function runway(host, stab) {
     hitTarget(bar, {
       title: monthLabel(r.month),
       rows: [{ label: "Surplus", value: money(r.surplus) }, { label: "Savings target", value: money(r.target) }],
+      onSelect: () => ctx.select({ month: r.month }),
     });
+    markPicked(bar, isPicked(ctx.filters, { month: r.month }));
     svg.append("line").attr("x1", x(r.month) - 2).attr("x2", x(r.month) + x.bandwidth() + 2)
       .attr("y1", y(r.target)).attr("y2", y(r.target)).attr("stroke", "var(--ink)").attr("stroke-width", 2);
   });

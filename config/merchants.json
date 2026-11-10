@@ -104,14 +104,14 @@
     {
       "brand": "Pret A Manger",
       "pattern": "\\bPRET\\b",
-      "subcategory": "eating_out.fast_food",
+      "subcategory": "eating_out.cafes_coffee",
       "source": "knowledge",
       "confidence": "high"
     },
     {
       "brand": "Greggs",
       "pattern": "\\bGREGGS\\b",
-      "subcategory": "eating_out.fast_food",
+      "subcategory": "food.bakery_specialty",
       "source": "knowledge",
       "confidence": "high"
     },
