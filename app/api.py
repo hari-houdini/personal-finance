@@ -1,6 +1,6 @@
 """FastAPI application: JSON API for the dashboard, plus the static web/ front end.
 
-Binds to 127.0.0.1 only (see scripts/run.sh). Nothing here touches statements/.
+Binds to 127.0.0.1 only (see README.md for the run command). Nothing here touches statements/.
 """
 
 from __future__ import annotations
