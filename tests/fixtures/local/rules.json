@@ -1,0 +1,3 @@
+{"rules": [
+  {"brand": "Test Employer", "pattern": "\\bPIXEL TOYS\\b", "subcategory": "income.salary", "source": "user", "confidence": "high"}
+]}

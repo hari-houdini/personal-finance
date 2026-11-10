@@ -1,0 +1,124 @@
+/* Design tokens. Colour values are the validated reference palette in dataviz/references/palette.md.
+   Roles, not hex, are used everywhere else. Light is the default; dark follows the OS unless the
+   viewer picks a theme, and data-theme always wins over the OS setting. */
+
+:root {
+  color-scheme: light;
+
+  /* Page and surfaces */
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --surface-2: #f3f2ee;       /* sidebar and filter bar: second neutral layer */
+  --border: rgba(11, 11, 11, 0.10);
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+
+  /* Ink */
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --ink-3: #6f6e69;           /* muted labels; 4.5:1 on the light surface */
+
+  /* Accent: primary action, current selection, focus. Blue is also series slot 1 by design. */
+  --accent: #2a78d6;
+  --accent-ink: #ffffff;
+  --accent-wash: rgba(42, 120, 214, 0.10);
+  --focus: #2a78d6;
+
+  /* Categorical slots (fixed order, never cycled) */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+  --series-6: #008300;
+  --series-7: #6250d6;
+  --series-8: #e34948;
+  --series-ink-on-light: #ffffff;   /* label inside a fill */
+  --series-ink-on-warning: #0b0b0b;
+
+  /* Status: never reused for identity; always paired with an icon or label */
+  --good: #0ca30c;
+  --warning: #fab219;
+  --serious: #ec835a;
+  --critical: #d03b3b;
+  --good-text: #006300;
+
+  /* Diverging midpoint */
+  --diverge-mid: #f0efec;
+
+  /* Shape and rhythm */
+  --radius: 6px;
+  --radius-sm: 4px;
+  --gap: 1rem;
+  --rail: 13.5rem;
+  --topbar: 3.25rem;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur: 180ms;
+
+  /* Type: system sans only, fixed rem scale. Heading steps are at least 1.25x the step below,
+     so page title, panel title and body read as three distinct levels. */
+  --font: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --t-xs: 0.75rem;     /* 12px, axis ticks */
+  --t-sm: 0.8125rem;   /* 13px, labels, table */
+  --t-md: 0.9375rem;   /* 15px, body */
+  --t-lg: 1.1875rem;   /* 19px, panel title (1.27x body) */
+  --t-xl: 1.625rem;    /* 26px, page title (1.37x panel title) */
+  --t-2xl: 1.5rem;     /* 24px, figure value (figures are numbers, not headings) */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --surface-2: #151514;
+    --border: rgba(255, 255, 255, 0.10);
+    --grid: #2c2c2a;
+    --axis: #383835;
+    --ink: #f0efec;
+    --ink-2: #c3c2b7;
+    --ink-3: #9a988f;
+    --accent: #3987e5;
+    --accent-ink: #0b0b0b;
+    --accent-wash: rgba(57, 135, 229, 0.16);
+    --focus: #3987e5;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-4: #c98500;
+    --series-5: #d55181;
+    --series-6: #008300;
+    --series-7: #9085e9;
+    --series-8: #e66767;
+    --series-ink-on-light: #ffffff;
+    --good-text: #0ca30c;
+    --diverge-mid: #383835;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d;
+  --surface: #1a1a19;
+  --surface-2: #151514;
+  --border: rgba(255, 255, 255, 0.10);
+  --grid: #2c2c2a;
+  --axis: #383835;
+  --ink: #f0efec;
+  --ink-2: #c3c2b7;
+  --ink-3: #9a988f;
+  --accent: #3987e5;
+  --accent-ink: #0b0b0b;
+  --accent-wash: rgba(57, 135, 229, 0.16);
+  --focus: #3987e5;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-6: #008300;
+  --series-7: #9085e9;
+  --series-8: #e66767;
+  --good-text: #0ca30c;
+  --diverge-mid: #383835;
+}

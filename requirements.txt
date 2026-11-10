@@ -1,0 +1,6 @@
+fastapi==0.162.4
+uvicorn[standard]==0.54.0
+watchdog==7.1.0
+httpx==0.28.1
+pytest==9.2.0
+ruff==0.17.4

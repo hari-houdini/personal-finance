@@ -1,0 +1,14 @@
+{
+  "_comment": "Default targets for the stability plan. Edit freely; the dashboard reads these on every request.",
+  "earned_income_subcategories": ["income.salary", "income.self_employment", "income.benefits_pensions"],
+  "essential_kinds": ["essential"],
+  "emergency_fund_months": {"start": 3, "target": 6},
+  "savings_rate_target": 0.20,
+  "debt_method": "avalanche",
+  "trailing_months_for_baseline": 3,
+  "user_entered": {
+    "emergency_fund_balance": null,
+    "loan_balances": {},
+    "balances_note": "Statements show card and current-account activity only. Enter real balances here to replace the transfer-based estimates."
+  }
+}

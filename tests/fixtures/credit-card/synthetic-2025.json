@@ -1,0 +1,5 @@
+{"transactions": [
+  {"transactionDate": "2025-03-02", "transactionPostingDate": "2025-03-03", "transactionAmount": {"amount": 4.5, "currencyCode": "GBP"}, "transactionCreditDebitCode": "DEBIT_TRANSACTION", "transactionDescriptions": ["STARBUCKS 99999 TESTTOWN"], "cardNumber": "4000123412341234", "transactionReferenceNumber": "REF9988776655", "authorizationCode": "AB1234"},
+  {"transactionDate": "2025-03-04", "transactionPostingDate": "2025-03-05", "transactionAmount": {"amount": 20.0, "currencyCode": "GBP"}, "transactionCreditDebitCode": "CREDIT_TRANSACTION", "transactionDescriptions": ["PAYMENT - THANK YOU"], "cardNumber": "4000123412341234", "transactionReferenceNumber": "REF1122334455", "authorizationCode": "CD5678"},
+  {"transactionDate": "2025-03-06", "transactionPostingDate": "2025-03-06", "transactionAmount": {"amount": 12.0, "currencyCode": "GBP"}, "transactionCreditDebitCode": "CREDIT_TRANSACTION", "transactionDescriptions": ["STARBUCKS 99999 TESTTOWN REFUND"], "cardNumber": "4000123412341234", "transactionReferenceNumber": "REF0000000001", "authorizationCode": "EF9012"}
+]}

@@ -1,0 +1,865 @@
+{
+  "_comment": "Generic brand map (safe to commit). Patterns are case-insensitive regexes matched against the descriptor after payment-processor prefixes are removed. First match wins, so keep specific patterns above general ones. Personal payees live in config/local/ and are never committed.",
+  "processor_prefixes": [
+    "^SQ \\*",
+    "^SUMUP\\s*\\*?",
+    "^ZETTLE_\\*?",
+    "^PAYPAL\\s*\\*?",
+    "^PAYPAL_",
+    "^PPOINT_",
+    "^STRIPE\\s*\\*?"
+  ],
+  "rules": [
+    {
+      "brand": "Card repayment",
+      "pattern": "\\bHSBC BNK VSA|\\bB/CARD PLAT VISA|^PAYMENT - THANK",
+      "subcategory": "transfers.card_repayment",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Starbucks",
+      "pattern": "\\bSTARBUCKS\\b",
+      "subcategory": "eating_out.cafes_coffee",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Costa Coffee",
+      "pattern": "\\bCOSTA\\b",
+      "subcategory": "eating_out.cafes_coffee",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Caffè Nero",
+      "pattern": "\\bCAFF?E NERO\\b",
+      "subcategory": "eating_out.cafes_coffee",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Centenary Lounge",
+      "pattern": "\\bCENTENARY LOUNGE\\b",
+      "subcategory": "eating_out.cafes_coffee",
+      "source": "web",
+      "confidence": "high"
+    },
+    {
+      "brand": "Happy Lemon",
+      "pattern": "\\bHAPPY LEMON\\b",
+      "subcategory": "eating_out.cafes_coffee",
+      "source": "web",
+      "confidence": "high"
+    },
+    {
+      "brand": "Cenu Cacao",
+      "pattern": "\\bCENU CACAO\\b",
+      "subcategory": "eating_out.cafes_coffee",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Gail's Bakery",
+      "pattern": "\\bGAILS?\\b",
+      "subcategory": "eating_out.cafes_coffee",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Karak Chai",
+      "pattern": "\\bKARAK CHAI",
+      "subcategory": "eating_out.cafes_coffee",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Coffee Break",
+      "pattern": "\\bCOFFEE BREAK\\b",
+      "subcategory": "eating_out.cafes_coffee",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Molino Coffee",
+      "pattern": "\\bMOLINO COFFEE\\b",
+      "subcategory": "eating_out.cafes_coffee",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Coffee",
+      "pattern": "\\bCOFFEE NO\\b",
+      "subcategory": "eating_out.cafes_coffee",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Shakeologist",
+      "pattern": "\\bSHAKEOLOGIST\\b",
+      "subcategory": "eating_out.cafes_coffee",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Pret A Manger",
+      "pattern": "\\bPRET\\b",
+      "subcategory": "eating_out.fast_food",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Greggs",
+      "pattern": "\\bGREGGS\\b",
+      "subcategory": "eating_out.fast_food",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Subway",
+      "pattern": "\\bSUBWAY\\b",
+      "subcategory": "eating_out.fast_food",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Five Guys",
+      "pattern": "\\bFIVE GUYS\\b",
+      "subcategory": "eating_out.fast_food",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Mr Spuds",
+      "pattern": "\\bMR SPUDS\\b",
+      "subcategory": "eating_out.fast_food",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Wingers",
+      "pattern": "\\bWINGERS\\b",
+      "subcategory": "eating_out.fast_food",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Kayal",
+      "pattern": "\\bKAYAL\\b",
+      "subcategory": "eating_out.restaurants",
+      "source": "web",
+      "confidence": "high"
+    },
+    {
+      "brand": "Gusto Ricco",
+      "pattern": "\\bGUSTO RICCO\\b",
+      "subcategory": "eating_out.restaurants",
+      "source": "web",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Banh Mi",
+      "pattern": "\\bBANH MI\\b",
+      "subcategory": "eating_out.restaurants",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Deliveroo",
+      "pattern": "\\bDELIVEROO\\b",
+      "subcategory": "eating_out.takeaway_delivery",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Just Eat",
+      "pattern": "\\bJUST ?EAT\\b",
+      "subcategory": "eating_out.takeaway_delivery",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Uber Eats",
+      "pattern": "\\bUBER ?EATS\\b",
+      "subcategory": "eating_out.takeaway_delivery",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Fish Fair",
+      "pattern": "\\bFISH FAIR\\b",
+      "subcategory": "eating_out.takeaway_delivery",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Extra Fish Bar",
+      "pattern": "\\bEXTRA FISH BAR\\b",
+      "subcategory": "eating_out.takeaway_delivery",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Spud Stop",
+      "pattern": "\\bSPUD STOP\\b",
+      "subcategory": "eating_out.takeaway_delivery",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Tesco Petrol",
+      "pattern": "\\bTESCO PFS\\b",
+      "subcategory": "transport.fuel_charging",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Asda Petrol",
+      "pattern": "\\bASDA PETROL\\b",
+      "subcategory": "transport.fuel_charging",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Shell",
+      "pattern": "\\bSHELL\\b",
+      "subcategory": "transport.fuel_charging",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "BP",
+      "pattern": "^BP\\b",
+      "subcategory": "transport.fuel_charging",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Esso",
+      "pattern": "\\bESSO\\b",
+      "subcategory": "transport.fuel_charging",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Tesco",
+      "pattern": "\\bTESCO\\b",
+      "subcategory": "food.supermarket",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Asda",
+      "pattern": "\\bASDA\\b",
+      "subcategory": "food.supermarket",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Sainsbury's",
+      "pattern": "\\bSAINSBURY",
+      "subcategory": "food.supermarket",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Aldi",
+      "pattern": "\\bALDI\\b",
+      "subcategory": "food.supermarket",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Lidl",
+      "pattern": "\\bLIDL\\b",
+      "subcategory": "food.supermarket",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Iceland",
+      "pattern": "\\bICELAND\\b",
+      "subcategory": "food.supermarket",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Co-op",
+      "pattern": "\\bCO-?OP\\b",
+      "subcategory": "food.convenience",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Morrisons",
+      "pattern": "\\bMORRISONS?\\b",
+      "subcategory": "food.supermarket",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Khera Supermarkets",
+      "pattern": "\\bKHERA SUPERMARKETS\\b",
+      "subcategory": "food.supermarket",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Holland & Barrett",
+      "pattern": "\\bHOLLAND ?& ?BARRETT\\b",
+      "subcategory": "health.pharmacy",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Boots",
+      "pattern": "\\bBOOTS\\b",
+      "subcategory": "health.pharmacy",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Superdrug",
+      "pattern": "\\bSUPERDRUG\\b",
+      "subcategory": "personal_care.beauty_cosmetics",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "NYX",
+      "pattern": "\\bNYX\\b",
+      "subcategory": "personal_care.beauty_cosmetics",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Pets at Home",
+      "pattern": "\\bPETS AT HOME\\b",
+      "subcategory": "pets.supplies",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Animal Health Care",
+      "pattern": "\\bANIMAL HEALTH\\b",
+      "subcategory": "pets.vet_medication",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Waterstones",
+      "pattern": "\\bWATERSTONES\\b",
+      "subcategory": "shopping.books_stationery",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Ryman",
+      "pattern": "\\bRYMAN\\b",
+      "subcategory": "shopping.books_stationery",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Poundland",
+      "pattern": "\\bPOUNDLAND\\b",
+      "subcategory": "shopping.general_retail",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Sports Direct",
+      "pattern": "\\bSPORTS ?DIRECT\\b",
+      "subcategory": "shopping.clothing_footwear",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "CEX",
+      "pattern": "\\bCEX\\b",
+      "subcategory": "shopping.electronics_tech",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Halfords",
+      "pattern": "\\bHALFORDS\\b",
+      "subcategory": "transport.car_maintenance",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Amazon Prime",
+      "pattern": "\\bAMAZON PRIME\\b",
+      "subcategory": "subscriptions.streaming",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Amazon",
+      "pattern": "\\bAMAZON\\b|\\bAMZN",
+      "subcategory": "shopping.online_marketplaces",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Stagecoach",
+      "pattern": "\\bSTAGECOACH\\b",
+      "subcategory": "transport.public",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Trainline",
+      "pattern": "\\bTRAINLINE\\b|\\bTRAINPAL\\b",
+      "subcategory": "transport.public",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Transport for London",
+      "pattern": "\\bTFL\\b",
+      "subcategory": "transport.public",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "NX Bus",
+      "pattern": "\\bNX BUS\\b",
+      "subcategory": "transport.public",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Ringgo",
+      "pattern": "\\bRINGGO\\b",
+      "subcategory": "transport.parking_tolls",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Uber",
+      "pattern": "\\bUBR\\b|\\bUBER\\b",
+      "subcategory": "transport.taxi_rideshare",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Parking",
+      "pattern": "\\bPARKING\\b",
+      "subcategory": "transport.parking_tolls",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Driving lessons",
+      "pattern": "\\bDRIVING\\b",
+      "subcategory": "education.courses_tuition",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Admiral",
+      "pattern": "\\bADMIRAL\\b",
+      "subcategory": "transport.car_insurance",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Adrian Flux",
+      "pattern": "\\bADRIAN FLUX\\b",
+      "subcategory": "transport.car_insurance",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Sundays Insurance",
+      "pattern": "\\bSUNDAYS? INSURANCE\\b",
+      "subcategory": "insurance.other",
+      "source": "web",
+      "confidence": "high"
+    },
+    {
+      "brand": "AXA PPP Healthcare",
+      "pattern": "\\bAXA PPP\\b",
+      "subcategory": "health.private_healthcare",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "AO Optical Services",
+      "pattern": "\\bAO-?OPTICAL\\b",
+      "subcategory": "health.gp_dentist_optician",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Anytime Fitness",
+      "pattern": "\\bANYTIME FITNESS\\b",
+      "subcategory": "health.gym_fitness",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "EE",
+      "pattern": "\\bEE LIMITED\\b|\\bEE LTD\\b",
+      "subcategory": "subscriptions.phone_contract",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "BT",
+      "pattern": "\\bBT GROUP\\b",
+      "subcategory": "housing.broadband",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "OVO Energy",
+      "pattern": "\\bOVO ENERGY\\b",
+      "subcategory": "housing.energy",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "ScottishPower",
+      "pattern": "\\bSCOTTISHPOWER\\b",
+      "subcategory": "housing.energy",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Leep Networks",
+      "pattern": "\\bLEEP NETWORKS\\b",
+      "subcategory": "housing.energy",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Council tax",
+      "pattern": "\\bWARWICK(SHIRE)? (DISTRICT|CC|COUNCIL)\\b|\\bRUGBY B\\.?C\\b",
+      "subcategory": "housing.council_tax",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "TV Licence",
+      "pattern": "\\bTV LICEN[CS]E\\b",
+      "subcategory": "taxes.tv_licence",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "HMRC",
+      "pattern": "\\bHMRC\\b",
+      "subcategory": "taxes.income_tax",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Volkswagen Financial Services",
+      "pattern": "\\bVWFS\\b",
+      "subcategory": "debt.hire_purchase",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Close Brothers Motor Finance",
+      "pattern": "\\bCLOSEBROS",
+      "subcategory": "debt.hire_purchase",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Plum",
+      "pattern": "\\bPLUM\\b",
+      "subcategory": "savings.general",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Your-Saving.com",
+      "pattern": "\\bYOUR-SAVING",
+      "subcategory": "savings.general",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Apple",
+      "pattern": "\\bAPPLE\\.COM\\b",
+      "subcategory": "subscriptions.software_cloud",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Google",
+      "pattern": "\\bGOOGLE\\b",
+      "subcategory": "subscriptions.software_cloud",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "PlayStation Network",
+      "pattern": "\\bPLAYSTATION NETWOR",
+      "subcategory": "entertainment.games_apps",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Experian",
+      "pattern": "\\bEXPERIAN\\b",
+      "subcategory": "subscriptions.memberships",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Netflix",
+      "pattern": "\\bNETFLIX\\b",
+      "subcategory": "subscriptions.streaming",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Spotify",
+      "pattern": "\\bSPOTIFY\\b",
+      "subcategory": "subscriptions.streaming",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Lake Vyrnwy Hotel",
+      "pattern": "\\bLAKE VYRNWY\\b",
+      "subcategory": "travel.accommodation",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "W&L Light Railway",
+      "pattern": "\\bW&L LIGHT RAILWAY\\b",
+      "subcategory": "entertainment.days_out",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Interest",
+      "pattern": "^INTEREST$",
+      "subcategory": "income.interest_dividends",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Non-sterling transaction fee",
+      "pattern": "NON-STERLING TRANSACTION FEE",
+      "subcategory": "fees.foreign_transaction",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Reversal",
+      "pattern": "^REVERSAL OF",
+      "subcategory": "refunds.reversal",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Blenz Coffee",
+      "pattern": "\\bBLENZ\\b",
+      "subcategory": "eating_out.cafes_coffee",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "The Larder",
+      "pattern": "\\bTHE LARDER\\b",
+      "subcategory": "eating_out.cafes_coffee",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Acai bowls",
+      "pattern": "\\bACAI\\b",
+      "subcategory": "eating_out.cafes_coffee",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Butterwick Bakery",
+      "pattern": "\\bBUTTERWICK\\b",
+      "subcategory": "food.bakery_specialty",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Ye Olde pub",
+      "pattern": "\\bYE OLDE\\b",
+      "subcategory": "eating_out.pubs_bars",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Haidilao",
+      "pattern": "\\bHAIDILAO\\b",
+      "subcategory": "eating_out.restaurants",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Mr Wang",
+      "pattern": "\\bMR WANG\\b",
+      "subcategory": "eating_out.restaurants",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Marks & Spencer",
+      "pattern": "\\bMARKS ?& ?SPENCER\\b|\\bM&S\\b",
+      "subcategory": "shopping.general_retail",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "British Airways",
+      "pattern": "\\bBRITISH (AIRWAYS|AWYS|WWW)\\b",
+      "subcategory": "travel.flights",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Booking.com",
+      "pattern": "\\bBKG\\b|\\bBOOKING\\.COM\\b",
+      "subcategory": "travel.accommodation",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Oaklands Glamping",
+      "pattern": "\\bOAKLANDS GLAMPING\\b",
+      "subcategory": "travel.accommodation",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Cottages.com",
+      "pattern": "\\bCOTTAGES\\.? ?COM\\b",
+      "subcategory": "travel.accommodation",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Pitwalk",
+      "pattern": "\\bPITWALK\\b",
+      "subcategory": "entertainment.days_out",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "DVLA",
+      "pattern": "\\bDVLA\\b",
+      "subcategory": "taxes.vehicle_tax",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Eventim",
+      "pattern": "\\bEVENTIM\\b",
+      "subcategory": "entertainment.concerts_events",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Furniture Village",
+      "pattern": "\\bFURNITURE VILLAGE\\b",
+      "subcategory": "shopping.home_garden",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Homesense",
+      "pattern": "\\bHOMESENSE\\b",
+      "subcategory": "shopping.home_garden",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Dunelm",
+      "pattern": "\\bDUNELM\\b",
+      "subcategory": "shopping.home_garden",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Currys",
+      "pattern": "\\bCURRYS\\b",
+      "subcategory": "shopping.electronics_tech",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Lush",
+      "pattern": "\\bLUSH\\b",
+      "subcategory": "personal_care.toiletries",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "David Clulow",
+      "pattern": "\\bDAVID CLULOW\\b",
+      "subcategory": "health.gp_dentist_optician",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Shop Direct",
+      "pattern": "\\bSHOP DIRECT\\b",
+      "subcategory": "shopping.online_marketplaces",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Claude (Anthropic)",
+      "pattern": "\\bCLAUDE\\.?AI\\b|\\bANTHROPIC\\b",
+      "subcategory": "subscriptions.software_cloud",
+      "source": "knowledge",
+      "confidence": "high"
+    },
+    {
+      "brand": "Volkswagen dealer",
+      "pattern": "\\bVW (SHEFFIELD|DEALER)\\b",
+      "subcategory": "transport.car_maintenance",
+      "source": "knowledge",
+      "confidence": "medium"
+    },
+    {
+      "brand": "Severn Trent Water",
+      "pattern": "\\bSTWATER\\b|\\bSEVERN TRENT\\b",
+      "subcategory": "housing.water",
+      "source": "knowledge",
+      "confidence": "medium"
+    }
+  ],
+  "location_words": [
+    "LEAMINGTON",
+    "LEAMING",
+    "SP",
+    "SPA",
+    "RUGBY",
+    "COVENTRY",
+    "WARWICK",
+    "LONDON",
+    "STOCKPORT",
+    "MAIDSTONE",
+    "CHARD",
+    "HEATHCOTE",
+    "GB",
+    "UK",
+    "VIS",
+    "LTD",
+    "PLC",
+    "LIMITED",
+    "DD",
+    "CONTACTLESS",
+    "WWW",
+    "COM",
+    "CO"
+  ]
+}

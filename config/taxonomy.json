@@ -1,0 +1,727 @@
+{
+  "version": 1,
+  "status": "approved",
+  "currency": "GBP",
+  "kinds": {
+    "income": "Money in from work, benefits, interest or gifts",
+    "essential": "Needs: housing, bills, food, transport, health, insurance",
+    "discretionary": "Wants: eating out, shopping, leisure, travel",
+    "debt": "Principal and interest repaid on borrowing",
+    "savings": "Money set aside or invested (not spent)",
+    "tax": "Government charges and penalties",
+    "fee": "Bank and card charges that buy nothing",
+    "transfer": "Money moved between own accounts or to people; excluded from spending",
+    "refund": "Money returned that reverses an earlier spend",
+    "review": "Needs a human decision before it can be classified"
+  },
+  "categories": [
+    {
+      "id": "income",
+      "name": "Income",
+      "kind": "income",
+      "subcategories": [
+        {
+          "id": "income.salary",
+          "name": "Salary & wages"
+        },
+        {
+          "id": "income.self_employment",
+          "name": "Self-employment & freelance"
+        },
+        {
+          "id": "income.benefits_pensions",
+          "name": "Benefits & state pension"
+        },
+        {
+          "id": "income.interest_dividends",
+          "name": "Interest & dividends"
+        },
+        {
+          "id": "income.cashback_rewards",
+          "name": "Cashback & rewards"
+        },
+        {
+          "id": "income.gifts_received",
+          "name": "Gifts & money received"
+        },
+        {
+          "id": "income.other",
+          "name": "Other income"
+        }
+      ]
+    },
+    {
+      "id": "housing",
+      "name": "Housing",
+      "kind": "essential",
+      "subcategories": [
+        {
+          "id": "housing.rent",
+          "name": "Rent"
+        },
+        {
+          "id": "housing.mortgage",
+          "name": "Mortgage"
+        },
+        {
+          "id": "housing.council_tax",
+          "name": "Council tax"
+        },
+        {
+          "id": "housing.energy",
+          "name": "Electricity & gas"
+        },
+        {
+          "id": "housing.water",
+          "name": "Water"
+        },
+        {
+          "id": "housing.broadband",
+          "name": "Broadband"
+        },
+        {
+          "id": "housing.home_insurance",
+          "name": "Home insurance"
+        },
+        {
+          "id": "housing.repairs",
+          "name": "Repairs & maintenance"
+        },
+        {
+          "id": "housing.furniture_appliances",
+          "name": "Furniture & appliances"
+        },
+        {
+          "id": "housing.cleaning_services",
+          "name": "Cleaning & household services"
+        },
+        {
+          "id": "housing.household_supplies",
+          "name": "Household supplies"
+        }
+      ]
+    },
+    {
+      "id": "food",
+      "name": "Food & Groceries",
+      "kind": "essential",
+      "subcategories": [
+        {
+          "id": "food.supermarket",
+          "name": "Supermarkets"
+        },
+        {
+          "id": "food.convenience",
+          "name": "Convenience & corner shops"
+        },
+        {
+          "id": "food.greengrocer_market",
+          "name": "Greengrocers & markets"
+        },
+        {
+          "id": "food.bakery_specialty",
+          "name": "Bakery & specialty food"
+        },
+        {
+          "id": "food.online_grocery",
+          "name": "Online grocery delivery"
+        }
+      ]
+    },
+    {
+      "id": "eating_out",
+      "name": "Eating Out & Drinks",
+      "kind": "discretionary",
+      "subcategories": [
+        {
+          "id": "eating_out.restaurants",
+          "name": "Restaurants"
+        },
+        {
+          "id": "eating_out.takeaway_delivery",
+          "name": "Takeaway & food delivery"
+        },
+        {
+          "id": "eating_out.fast_food",
+          "name": "Fast food"
+        },
+        {
+          "id": "eating_out.cafes_coffee",
+          "name": "Coffee & cafés"
+        },
+        {
+          "id": "eating_out.pubs_bars",
+          "name": "Pubs & bars"
+        },
+        {
+          "id": "eating_out.alcohol_offlicence",
+          "name": "Alcohol & off-licence"
+        }
+      ]
+    },
+    {
+      "id": "transport",
+      "name": "Transport",
+      "kind": "essential",
+      "subcategories": [
+        {
+          "id": "transport.public",
+          "name": "Trains, buses & tube"
+        },
+        {
+          "id": "transport.taxi_rideshare",
+          "name": "Taxis & ride-hailing"
+        },
+        {
+          "id": "transport.fuel_charging",
+          "name": "Fuel & EV charging"
+        },
+        {
+          "id": "transport.parking_tolls",
+          "name": "Parking, tolls & congestion charges"
+        },
+        {
+          "id": "transport.car_insurance",
+          "name": "Car insurance"
+        },
+        {
+          "id": "transport.car_maintenance",
+          "name": "Car servicing, MOT & repairs"
+        },
+        {
+          "id": "transport.bike_scooter",
+          "name": "Bike & scooter hire"
+        },
+        {
+          "id": "transport.car_finance",
+          "name": "Car purchase & hire (see Debt)"
+        }
+      ]
+    },
+    {
+      "id": "travel",
+      "name": "Travel & Holidays",
+      "kind": "discretionary",
+      "subcategories": [
+        {
+          "id": "travel.flights",
+          "name": "Flights"
+        },
+        {
+          "id": "travel.accommodation",
+          "name": "Hotels & accommodation"
+        },
+        {
+          "id": "travel.activities_tours",
+          "name": "Holiday activities & tours"
+        },
+        {
+          "id": "travel.insurance",
+          "name": "Travel insurance"
+        },
+        {
+          "id": "travel.luggage_extras",
+          "name": "Luggage & travel extras"
+        },
+        {
+          "id": "travel.visas_documents",
+          "name": "Visas & travel documents"
+        }
+      ]
+    },
+    {
+      "id": "health",
+      "name": "Health & Wellbeing",
+      "kind": "essential",
+      "subcategories": [
+        {
+          "id": "health.pharmacy",
+          "name": "Pharmacy & prescriptions"
+        },
+        {
+          "id": "health.gp_dentist_optician",
+          "name": "GP, dentist & optician"
+        },
+        {
+          "id": "health.private_healthcare",
+          "name": "Private healthcare"
+        },
+        {
+          "id": "health.gym_fitness",
+          "name": "Gym & fitness"
+        },
+        {
+          "id": "health.sports_clubs",
+          "name": "Sports & clubs"
+        },
+        {
+          "id": "health.therapy_mental",
+          "name": "Therapy & mental health"
+        }
+      ]
+    },
+    {
+      "id": "personal_care",
+      "name": "Personal Care",
+      "kind": "discretionary",
+      "subcategories": [
+        {
+          "id": "personal_care.hair_barber",
+          "name": "Hair & barber"
+        },
+        {
+          "id": "personal_care.beauty_cosmetics",
+          "name": "Beauty & cosmetics"
+        },
+        {
+          "id": "personal_care.toiletries",
+          "name": "Toiletries & hygiene"
+        },
+        {
+          "id": "personal_care.spa_massage",
+          "name": "Spa & massage"
+        }
+      ]
+    },
+    {
+      "id": "shopping",
+      "name": "Shopping",
+      "kind": "discretionary",
+      "subcategories": [
+        {
+          "id": "shopping.clothing_footwear",
+          "name": "Clothing & footwear"
+        },
+        {
+          "id": "shopping.electronics_tech",
+          "name": "Electronics & tech"
+        },
+        {
+          "id": "shopping.home_garden",
+          "name": "Home & garden"
+        },
+        {
+          "id": "shopping.books_stationery",
+          "name": "Books & stationery"
+        },
+        {
+          "id": "shopping.hobbies_crafts",
+          "name": "Hobbies & crafts"
+        },
+        {
+          "id": "shopping.general_retail",
+          "name": "General retail"
+        },
+        {
+          "id": "shopping.online_marketplaces",
+          "name": "Online marketplaces"
+        }
+      ]
+    },
+    {
+      "id": "entertainment",
+      "name": "Entertainment & Leisure",
+      "kind": "discretionary",
+      "subcategories": [
+        {
+          "id": "entertainment.cinema_theatre",
+          "name": "Cinema & theatre"
+        },
+        {
+          "id": "entertainment.concerts_events",
+          "name": "Concerts & events"
+        },
+        {
+          "id": "entertainment.days_out",
+          "name": "Days out & attractions"
+        },
+        {
+          "id": "entertainment.games_apps",
+          "name": "Games & in-app purchases"
+        },
+        {
+          "id": "entertainment.gambling",
+          "name": "Gambling & betting"
+        }
+      ]
+    },
+    {
+      "id": "subscriptions",
+      "name": "Subscriptions & Memberships",
+      "kind": "discretionary",
+      "subcategories": [
+        {
+          "id": "subscriptions.streaming",
+          "name": "Streaming video & music"
+        },
+        {
+          "id": "subscriptions.software_cloud",
+          "name": "Software & cloud storage"
+        },
+        {
+          "id": "subscriptions.phone_contract",
+          "name": "Mobile phone contract"
+        },
+        {
+          "id": "subscriptions.news_magazines",
+          "name": "News & magazines"
+        },
+        {
+          "id": "subscriptions.memberships",
+          "name": "Memberships & professional bodies"
+        }
+      ]
+    },
+    {
+      "id": "education",
+      "name": "Education & Learning",
+      "kind": "discretionary",
+      "subcategories": [
+        {
+          "id": "education.courses_tuition",
+          "name": "Courses & tuition"
+        },
+        {
+          "id": "education.books_materials",
+          "name": "Learning materials"
+        },
+        {
+          "id": "education.exams_certifications",
+          "name": "Exams & certifications"
+        }
+      ]
+    },
+    {
+      "id": "family",
+      "name": "Family & Children",
+      "kind": "essential",
+      "subcategories": [
+        {
+          "id": "family.childcare",
+          "name": "Childcare & nursery"
+        },
+        {
+          "id": "family.school_costs",
+          "name": "School costs"
+        },
+        {
+          "id": "family.children_clothing",
+          "name": "Children's clothing"
+        },
+        {
+          "id": "family.children_activities",
+          "name": "Children's activities"
+        },
+        {
+          "id": "family.baby_supplies",
+          "name": "Baby & kids supplies"
+        },
+        {
+          "id": "family.pocket_money",
+          "name": "Pocket money"
+        }
+      ]
+    },
+    {
+      "id": "pets",
+      "name": "Pets",
+      "kind": "essential",
+      "subcategories": [
+        {
+          "id": "pets.food",
+          "name": "Pet food"
+        },
+        {
+          "id": "pets.vet_medication",
+          "name": "Vet & medication"
+        },
+        {
+          "id": "pets.insurance",
+          "name": "Pet insurance"
+        },
+        {
+          "id": "pets.grooming_boarding",
+          "name": "Grooming & boarding"
+        },
+        {
+          "id": "pets.supplies",
+          "name": "Pet supplies"
+        }
+      ]
+    },
+    {
+      "id": "work",
+      "name": "Work & Business",
+      "kind": "essential",
+      "subcategories": [
+        {
+          "id": "work.equipment",
+          "name": "Equipment & hardware"
+        },
+        {
+          "id": "work.software",
+          "name": "Work software & tools"
+        },
+        {
+          "id": "work.professional_fees",
+          "name": "Professional fees & accountancy"
+        },
+        {
+          "id": "work.travel_mileage",
+          "name": "Work travel & mileage"
+        },
+        {
+          "id": "work.office_supplies",
+          "name": "Office supplies & printing"
+        }
+      ]
+    },
+    {
+      "id": "debt",
+      "name": "Debt & Borrowing",
+      "kind": "debt",
+      "subcategories": [
+        {
+          "id": "debt.personal_loan",
+          "name": "Personal loan repayments"
+        },
+        {
+          "id": "debt.credit_card_minimum",
+          "name": "Credit card repayments (see Transfers for card payments)"
+        },
+        {
+          "id": "debt.student_loan",
+          "name": "Student loan repayments"
+        },
+        {
+          "id": "debt.buy_now_pay_later",
+          "name": "Buy now, pay later instalments"
+        },
+        {
+          "id": "debt.hire_purchase",
+          "name": "Hire purchase & finance agreements"
+        },
+        {
+          "id": "debt.catalogue_credit",
+          "name": "Catalogue & store credit"
+        }
+      ]
+    },
+    {
+      "id": "savings",
+      "name": "Savings & Investments",
+      "kind": "savings",
+      "subcategories": [
+        {
+          "id": "savings.emergency_fund",
+          "name": "Emergency fund"
+        },
+        {
+          "id": "savings.sinking_fund",
+          "name": "Sinking fund (annual costs)"
+        },
+        {
+          "id": "savings.general",
+          "name": "General savings"
+        },
+        {
+          "id": "savings.pension",
+          "name": "Pension contributions"
+        },
+        {
+          "id": "savings.isa_investments",
+          "name": "ISA & investment accounts"
+        },
+        {
+          "id": "savings.crypto",
+          "name": "Crypto"
+        }
+      ]
+    },
+    {
+      "id": "insurance",
+      "name": "Insurance",
+      "kind": "essential",
+      "subcategories": [
+        {
+          "id": "insurance.life",
+          "name": "Life insurance"
+        },
+        {
+          "id": "insurance.income_protection",
+          "name": "Income protection"
+        },
+        {
+          "id": "insurance.critical_illness",
+          "name": "Critical illness cover"
+        },
+        {
+          "id": "insurance.gadgets",
+          "name": "Gadget & device insurance"
+        },
+        {
+          "id": "insurance.other",
+          "name": "Other insurance"
+        }
+      ]
+    },
+    {
+      "id": "taxes",
+      "name": "Taxes & Government",
+      "kind": "tax",
+      "subcategories": [
+        {
+          "id": "taxes.income_tax",
+          "name": "Income tax"
+        },
+        {
+          "id": "taxes.national_insurance",
+          "name": "National Insurance"
+        },
+        {
+          "id": "taxes.vehicle_tax",
+          "name": "Vehicle tax & licence"
+        },
+        {
+          "id": "taxes.tv_licence",
+          "name": "TV licence"
+        },
+        {
+          "id": "taxes.fines_penalties",
+          "name": "Fines & penalties"
+        },
+        {
+          "id": "taxes.official_fees",
+          "name": "Passport & official fees"
+        }
+      ]
+    },
+    {
+      "id": "fees",
+      "name": "Bank & Card Fees",
+      "kind": "fee",
+      "subcategories": [
+        {
+          "id": "fees.account",
+          "name": "Account & monthly fees"
+        },
+        {
+          "id": "fees.foreign_transaction",
+          "name": "Foreign transaction fees"
+        },
+        {
+          "id": "fees.atm",
+          "name": "ATM fees"
+        },
+        {
+          "id": "fees.overdraft",
+          "name": "Overdraft charges"
+        },
+        {
+          "id": "fees.card_interest",
+          "name": "Credit card interest & charges"
+        },
+        {
+          "id": "fees.late_payment",
+          "name": "Late payment charges"
+        }
+      ]
+    },
+    {
+      "id": "gifts_donations",
+      "name": "Gifts & Donations",
+      "kind": "discretionary",
+      "subcategories": [
+        {
+          "id": "gifts.given",
+          "name": "Gifts given"
+        },
+        {
+          "id": "gifts.charity",
+          "name": "Charity & donations"
+        },
+        {
+          "id": "gifts.religious",
+          "name": "Religious giving"
+        },
+        {
+          "id": "gifts.celebrations",
+          "name": "Celebrations & cards"
+        }
+      ]
+    },
+    {
+      "id": "transfers",
+      "name": "Transfers",
+      "kind": "transfer",
+      "subcategories": [
+        {
+          "id": "transfers.own_accounts",
+          "name": "Between own accounts"
+        },
+        {
+          "id": "transfers.family_in",
+          "name": "Family transfers in"
+        },
+        {
+          "id": "transfers.family_out",
+          "name": "Family transfers out"
+        },
+        {
+          "id": "transfers.card_repayment",
+          "name": "Card repayment (from current account)"
+        },
+        {
+          "id": "transfers.cash_withdrawal",
+          "name": "Cash withdrawals"
+        },
+        {
+          "id": "transfers.to_people",
+          "name": "Sent to people (peer payments)"
+        },
+        {
+          "id": "transfers.reimbursement_sent",
+          "name": "Reimbursements sent"
+        }
+      ]
+    },
+    {
+      "id": "refunds",
+      "name": "Refunds & Reversals",
+      "kind": "refund",
+      "subcategories": [
+        {
+          "id": "refunds.merchant",
+          "name": "Merchant refunds"
+        },
+        {
+          "id": "refunds.chargeback",
+          "name": "Chargebacks"
+        },
+        {
+          "id": "refunds.reversal",
+          "name": "Reversals"
+        }
+      ]
+    },
+    {
+      "id": "review",
+      "name": "Needs Review",
+      "kind": "review",
+      "subcategories": [
+        {
+          "id": "review.unclassified",
+          "name": "Unclassified"
+        },
+        {
+          "id": "review.possible_duplicate",
+          "name": "Possible duplicate"
+        },
+        {
+          "id": "review.unknown_merchant",
+          "name": "Unknown merchant"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Personal finance</title>
+  <meta name="description" content="Local dashboard for where your money goes and how to reach financial stability.">
+  <link rel="stylesheet" href="/static/css/tokens.css">
+  <link rel="stylesheet" href="/static/css/app.css">
+  <script src="/static/vendor/d3.min.js" defer></script>
+  <script src="/static/vendor/d3-sankey.min.js" defer></script>
+  <script type="module" src="/static/js/main.js"></script>
+</head>
+<body>
+  <a class="visually-hidden" href="#main">Skip to content</a>
+
+  <header class="topbar">
+    <div class="brand">Personal finance<small>Local only</small></div>
+
+    <div class="filters" role="toolbar" aria-label="Date range and filters">
+      <div class="presets" role="group" aria-label="Date range presets">
+        <button type="button" data-preset="1m">1 month</button>
+        <button type="button" data-preset="3m" aria-pressed="true">3 months</button>
+        <button type="button" data-preset="6m">6 months</button>
+        <button type="button" data-preset="12m">12 months</button>
+        <button type="button" data-preset="ytd">Year to date</button>
+        <button type="button" data-preset="all">All</button>
+      </div>
+      <label class="field">From <input type="date" id="f-from"></label>
+      <label class="field">To <input type="date" id="f-to"></label>
+      <label class="field">Account
+        <select id="f-account">
+          <option value="">Both</option>
+          <option value="debit-card">Current account</option>
+          <option value="credit-card">Credit card</option>
+        </select>
+      </label>
+      <label class="field">Category
+        <select id="f-category"><option value="">All</option></select>
+      </label>
+      <label class="field">Sub-category
+        <select id="f-subcategory"><option value="">All</option></select>
+      </label>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn" id="btn-theme" aria-pressed="false">Dark</button>
+      <button type="button" class="btn" id="btn-import">Re-read statements</button>
+      <button type="button" class="btn" id="btn-resolve">Identify merchants</button>
+    </div>
+  </header>
+
+  <div class="shell">
+    <nav class="rail" aria-label="Sections">
+      <ul>
+        <li><a href="#overview" data-nav="overview">Overview</a></li>
+        <li><a href="#cashflow" data-nav="cashflow">Cash flow</a></li>
+        <li><a href="#categories" data-nav="categories">Categories</a></li>
+        <li><a href="#merchants" data-nav="merchants">Merchants</a></li>
+        <li><a href="#trends" data-nav="trends">Trends</a></li>
+        <li><a href="#distributions" data-nav="distributions">Distributions</a></li>
+        <li><a href="#stability" data-nav="stability">Stability plan</a></li>
+        <li><a href="#transactions" data-nav="transactions">Transactions <span class="count" id="count-review"></span></a></li>
+        <li><a href="#ask" data-nav="ask">Ask</a></li>
+      </ul>
+    </nav>
+
+    <main class="content" id="main" tabindex="-1">
+      <div id="notice-host"></div>
+
+      <!-- Overview -->
+      <section class="view" id="view-overview" data-view="overview" aria-labelledby="h-overview">
+        <h1 id="h-overview">Overview</h1>
+        <p class="lede">Money in, money out, and what is left, for the dates chosen above.</p>
+        <dl class="figures" id="kpis" aria-label="Headline figures"></dl>
+        <div class="panels">
+          <article class="panel wide" aria-labelledby="t-cash-monthly">
+            <header><div><h2 id="t-cash-monthly">Monthly cash flow</h2><p class="desc">Income, spending, debt and savings by month.</p></div></header>
+            <div class="chart-host" data-chart="stacked-area" data-host="ov-cash"></div>
+          </article>
+          <article class="panel half" aria-labelledby="t-mix">
+            <header><div><h2 id="t-mix">Where the money goes</h2><p class="desc">Share of spending by category.</p></div></header>
+            <div class="chart-host" data-chart="donut" data-host="ov-donut"></div>
+          </article>
+          <article class="panel half" aria-labelledby="t-net">
+            <header><div><h2 id="t-net">Monthly net</h2><p class="desc">Each month's net, running total shown as steps.</p></div></header>
+            <div class="chart-host" data-chart="waterfall" data-host="ov-waterfall"></div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Cash flow -->
+      <section class="view" id="view-cashflow" data-view="cashflow" aria-labelledby="h-cashflow" hidden>
+        <h1 id="h-cashflow">Cash flow</h1>
+        <p class="lede">How money moves from income to categories, and how the mix of spending, debt and savings changes over time.</p>
+        <div class="panels">
+          <article class="panel wide" aria-labelledby="t-sankey">
+            <header><div><h2 id="t-sankey">Income to categories</h2><p class="desc">Width shows the money in each step.</p></div></header>
+            <div class="chart-host" data-chart="sankey" data-host="cf-sankey"></div>
+          </article>
+          <article class="panel wide" aria-labelledby="t-stream">
+            <header><div><h2 id="t-stream">Spending by category over time</h2><p class="desc">Streams stacked by category, month by month.</p></div></header>
+            <div class="chart-host" data-chart="streamgraph" data-host="cf-stream"></div>
+          </article>
+          <article class="panel half" aria-labelledby="t-mixbar">
+            <header><div><h2 id="t-mixbar">Kind of money, by month</h2><p class="desc">Each month as 100%.</p></div></header>
+            <div class="chart-host" data-chart="percent-bars" data-host="cf-percent"></div>
+          </article>
+          <article class="panel half" aria-labelledby="t-chord">
+            <header><div><h2 id="t-chord">Transfers</h2><p class="desc">Money moved between accounts and kinds of transfer. Not counted as spending.</p></div></header>
+            <div class="chart-host" data-chart="chord" data-host="cf-chord"></div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Categories -->
+      <section class="view" id="view-categories" data-view="categories" aria-labelledby="h-categories" hidden>
+        <h1 id="h-categories">Categories and sub-categories</h1>
+        <p class="lede">Spending from the broadest category down to individual merchants. Select a sub-category in the filter bar to narrow every view.</p>
+        <div class="panels">
+          <article class="panel wide" aria-labelledby="t-tree">
+            <header><div><h2 id="t-tree">Spending tree</h2><p class="desc">Category, sub-category and merchant. Tile area is spending.</p></div>
+              <div class="tools" role="group" aria-label="Chart type">
+                <button type="button" data-tree="treemap" aria-pressed="true">Treemap</button>
+                <button type="button" data-tree="sunburst" aria-pressed="false">Sunburst</button>
+              </div></header>
+            <div class="chart-host" data-chart="tree" data-host="cat-tree"></div>
+          </article>
+          <article class="panel half" aria-labelledby="t-radar">
+            <header><div><h2 id="t-radar">Profile, recent vs earlier</h2><p class="desc">Average monthly spending per category: last three complete months against the three before.</p></div></header>
+            <div class="chart-host" data-chart="radar" data-host="cat-radar"></div>
+          </article>
+          <article class="panel half" aria-labelledby="t-bullet">
+            <header><div><h2 id="t-bullet">Latest month against typical</h2><p class="desc">The bar is the latest complete month. The tick is the three-month average.</p></div></header>
+            <div class="chart-host" data-chart="bullet" data-host="cat-bullet"></div>
+          </article>
+          <article class="panel wide" aria-labelledby="t-slope">
+            <header><div><h2 id="t-slope">Change since the month before</h2><p class="desc">Each line runs from the month before to the latest complete month.</p></div></header>
+            <div class="chart-host" data-chart="slope" data-host="cat-slope"></div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Merchants -->
+      <section class="view" id="view-merchants" data-view="merchants" aria-labelledby="h-merchants" hidden>
+        <h1 id="h-merchants">Merchants</h1>
+        <p class="lede">Where the money went, shop by shop. Choose a sub-category above (for example Coffee &amp; cafés) to see its shops.</p>
+        <div class="panels">
+          <article class="panel half" aria-labelledby="t-hbar">
+            <header><div><h2 id="t-hbar">Top merchants</h2><p class="desc" id="hbar-desc">Largest spend, by merchant.</p></div></header>
+            <div class="chart-host" data-chart="hbar" data-host="m-hbar"></div>
+          </article>
+          <article class="panel half" aria-labelledby="t-bubble">
+            <header><div><h2 id="t-bubble">Frequency and average</h2><p class="desc">Visits against average amount. Area is total spend.</p></div></header>
+            <div class="chart-host" data-chart="bubble" data-host="m-bubble"></div>
+          </article>
+          <article class="panel wide" aria-labelledby="t-shops">
+            <header><div><h2 id="t-shops">Shops as a tree</h2><p class="desc">Merchant tiles sized by spend, within the selected filter.</p></div></header>
+            <div class="chart-host" data-chart="shops-tree" data-host="m-shops"></div>
+          </article>
+          <article class="panel wide" aria-labelledby="t-network">
+            <header><div><h2 id="t-network">Merchants and sub-categories</h2><p class="desc">Links show where each merchant's spend is filed.</p></div></header>
+            <div class="chart-host" data-chart="network" data-host="m-network"></div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Trends -->
+      <section class="view" id="view-trends" data-view="trends" aria-labelledby="h-trends" hidden>
+        <h1 id="h-trends">Trends</h1>
+        <p class="lede">Spending through time, with a smoothed line to show direction.</p>
+        <div class="panels">
+          <article class="panel wide" aria-labelledby="t-line">
+            <header><div><h2 id="t-line">Monthly spending</h2><p class="desc">Spending each complete month, with the three-month average as a second line.</p></div></header>
+            <div class="chart-host" data-chart="line" data-host="tr-line"></div>
+          </article>
+          <article class="panel wide" aria-labelledby="t-calendar">
+            <header><div><h2 id="t-calendar">Daily spending</h2><p class="desc">Each square is a day. Darker means more was spent.</p></div></header>
+            <div class="chart-host" data-chart="calendar" data-host="tr-calendar"></div>
+          </article>
+          <article class="panel wide" aria-labelledby="t-small">
+            <header><div><h2 id="t-small">Each category, month by month</h2><p class="desc">Small multiples on a shared scale.</p></div></header>
+            <div class="chart-host" data-chart="small-multiples" data-host="tr-small"></div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Distributions -->
+      <section class="view" id="view-distributions" data-view="distributions" aria-labelledby="h-distributions" hidden>
+        <h1 id="h-distributions">Distributions</h1>
+        <p class="lede">How big individual payments are, and how often each size occurs.</p>
+        <div class="panels">
+          <article class="panel half" aria-labelledby="t-box">
+            <header><div><h2 id="t-box">Payment sizes by category</h2><p class="desc">Box shows the middle half. Line is the median.</p></div></header>
+            <div class="chart-host" data-chart="boxplot" data-host="d-box"></div>
+          </article>
+          <article class="panel half" aria-labelledby="t-hist">
+            <header><div><h2 id="t-hist">How often each size occurs</h2><p class="desc">Every spending payment, grouped by size.</p></div></header>
+            <div class="chart-host" data-chart="histogram" data-host="d-hist"></div>
+          </article>
+          <article class="panel wide" aria-labelledby="t-dots">
+            <header><div><h2 id="t-dots">Every payment over time</h2><p class="desc">One dot per payment, by date and size.</p></div></header>
+            <div class="chart-host" data-chart="dots" data-host="d-dots"></div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Stability -->
+      <section class="view" id="view-stability" data-view="stability" aria-labelledby="h-stability" hidden>
+        <h1 id="h-stability">Stability plan</h1>
+        <p class="lede">Where you stand against the targets in <span class="help">config/stability.json</span>. Balances you enter replace the estimates.</p>
+        <div id="stab-notice"></div>
+        <dl class="figures" id="stab-figures" aria-label="Stability figures"></dl>
+        <div class="panels">
+          <article class="panel half" aria-labelledby="t-gauge-rate">
+            <header><div><h2 id="t-gauge-rate">Savings rate</h2><p class="desc">Share of earned income left after spending and debt. Target is shown as a tick.</p></div></header>
+            <div class="chart-host" data-chart="gauge" data-host="s-rate"></div>
+          </article>
+          <article class="panel half" aria-labelledby="t-gauge-fund">
+            <header><div><h2 id="t-gauge-fund">Emergency fund</h2><p class="desc">Months of essential spending covered, against the 3 and 6 month targets.</p></div></header>
+            <div class="chart-host" data-chart="fund" data-host="s-fund"></div>
+          </article>
+          <article class="panel half" aria-labelledby="t-debt">
+            <header><div><h2 id="t-debt">Debt payments</h2><p class="desc">Monthly payments by debt type, on the baseline window.</p></div></header>
+            <div class="chart-host" data-chart="debt-bars" data-host="s-debt"></div>
+          </article>
+          <article class="panel half" aria-labelledby="t-runway">
+            <header><div><h2 id="t-runway">Monthly surplus</h2><p class="desc">Money left each month after spending and debt, against the savings target.</p></div></header>
+            <div class="chart-host" data-chart="runway" data-host="s-runway"></div>
+          </article>
+          <article class="panel wide" aria-labelledby="t-balances">
+            <header><div><h2 id="t-balances">Your balances</h2><p class="desc">Statements do not show bank balances. Enter yours here so the figures above are exact.</p></div></header>
+            <form id="balances-form" class="forms">
+              <label>Emergency fund balance (£)
+                <input type="number" step="0.01" min="0" id="bal-fund" inputmode="decimal">
+              </label>
+              <label>Loan name
+                <input type="text" id="bal-loan-name" placeholder="e.g. Car finance">
+              </label>
+              <label>Balance (£)
+                <input type="number" step="0.01" min="0" id="bal-loan-balance" inputmode="decimal">
+              </label>
+              <label>Interest rate (% a year)
+                <input type="number" step="0.01" min="0" id="bal-loan-apr" inputmode="decimal">
+              </label>
+              <div style="align-self:end"><button type="submit" class="btn primary">Save balances</button></div>
+            </form>
+            <p class="help" id="bal-help">Add loans one at a time. Saved loans show here in avalanche order (highest interest first).</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- Transactions -->
+      <section class="view" id="view-transactions" data-view="transactions" aria-labelledby="h-transactions" hidden>
+        <h1 id="h-transactions">Transactions</h1>
+        <p class="lede">Every transaction for the dates chosen. Change a category here; tick "remember" to apply it to every future payment to the same merchant.</p>
+        <div class="toolbar">
+          <div class="tabs" role="tablist" aria-label="Transaction view">
+            <button type="button" role="tab" id="tab-all" aria-selected="true" data-tx-mode="all">All</button>
+            <button type="button" role="tab" id="tab-review" aria-selected="false" data-tx-mode="review">Needs review</button>
+          </div>
+          <label class="visually-hidden" for="tx-search">Search transactions</label>
+          <input type="search" id="tx-search" placeholder="Search merchant or description">
+          <label class="check"><input type="checkbox" id="tx-remember"> Remember for this merchant</label>
+        </div>
+        <div class="table-twin" style="margin-top:0;border-top:0;max-height:none">
+          <table class="data tx-table" id="tx-table">
+            <thead><tr><th>Date</th><th>Merchant</th><th class="num">Amount</th><th>Category</th><th>Source</th></tr></thead>
+            <tbody id="tx-body"></tbody>
+          </table>
+        </div>
+        <div class="pager">
+          <span id="tx-range"></span>
+          <span><button type="button" class="btn ghost" id="tx-prev">Previous</button> <button type="button" class="btn ghost" id="tx-next">Next</button></span>
+        </div>
+      </section>
+
+      <!-- Ask -->
+      <section class="view" id="view-ask" data-view="ask" aria-labelledby="h-ask" hidden>
+        <h1 id="h-ask">Ask</h1>
+        <p class="lede">Ask about a plan, a purchase, or a pattern. The answer is grounded in your own statements and opens in a panel.</p>
+        <div class="panels">
+          <article class="panel wide" aria-labelledby="t-chat">
+            <header><div><h2 id="t-chat">Conversation</h2><p class="desc">Your message goes to the claude CLI on this machine, unchanged.</p></div></header>
+            <div class="chat-log" id="chat-log" role="log" aria-live="polite" aria-label="Conversation"></div>
+            <form class="composer" id="chat-form">
+              <label class="visually-hidden" for="chat-input">Your question</label>
+              <textarea id="chat-input" rows="2" maxlength="4000" placeholder="For example: I'm planning a week in Lisbon in May. Can I afford it without touching the emergency fund?"></textarea>
+              <button type="submit" class="btn primary" id="chat-send">Send</button>
+            </form>
+            <p class="chat-hint">Answers draw on the reports folder. Press Ctrl or Cmd plus Enter to send.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog class="advice" id="advice" aria-labelledby="advice-title">
+    <div class="modal-head">
+      <h2 id="advice-title">Advice</h2>
+      <button type="button" class="btn ghost" id="advice-close">Close</button>
+    </div>
+    <div class="modal-body" id="advice-body"></div>
+  </dialog>
+
+  <div class="tooltip" id="tooltip" role="status" aria-live="off"></div>
+  <div class="toast" id="toast" role="status" hidden></div>
+</body>
+</html>
