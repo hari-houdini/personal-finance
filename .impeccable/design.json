@@ -1,0 +1,261 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-10",
+  "title": "Design System: Personal Finance",
+  "extensions": {
+    "colorMeta": {
+      "accent": {
+        "role": "primary",
+        "displayName": "Clear Cobalt",
+        "canonical": "oklch(57.5% 0.163 255.5)",
+        "dark": "#3987e5",
+        "tonalRamp": ["#000104", "#000414", "#000d3a", "#001d7e", "#0b39b8", "#2663ea", "#619aff", "#c6ddff"]
+      },
+      "series-1": {
+        "role": "series",
+        "displayName": "Clear Cobalt (series 1)",
+        "canonical": "oklch(57.5% 0.163 255.5)",
+        "dark": "#3987e5",
+        "tonalRamp": ["#000104", "#000414", "#000d3a", "#001d7e", "#0b39b8", "#2663ea", "#619aff", "#c6ddff"]
+      },
+      "series-2": {
+        "role": "series",
+        "displayName": "Ember",
+        "canonical": "oklch(67.1% 0.175 40.6)",
+        "dark": "#d95926",
+        "tonalRamp": ["#030000", "#0f0200", "#2b0500", "#600a00", "#a31805", "#da3b1c", "#ff7552", "#ffd0c1"]
+      },
+      "series-3": {
+        "role": "series",
+        "displayName": "Sea Green",
+        "canonical": "oklch(66.9% 0.141 162.1)",
+        "dark": "#199e70",
+        "tonalRamp": ["#000101", "#000703", "#001409", "#002c13", "#005324", "#1a7f46", "#54b27d", "#bde8d0"]
+      },
+      "series-4": {
+        "role": "series",
+        "displayName": "Marigold",
+        "canonical": "oklch(76.4% 0.161 75.1)",
+        "dark": "#c98500",
+        "tonalRamp": ["#020100", "#090400", "#1a0b00", "#3a1800", "#6c2e00", "#a8500a", "#d4893e", "#f6d6b0"]
+      },
+      "series-5": {
+        "role": "series",
+        "displayName": "Rose",
+        "canonical": "oklch(71.6% 0.141 357.4)",
+        "dark": "#d55181",
+        "tonalRamp": ["#030001", "#110005", "#2d020e", "#550a1f", "#861b3a", "#ba3d61", "#e67596", "#fecddb"]
+      },
+      "series-6": {
+        "role": "series",
+        "displayName": "Forest",
+        "canonical": "oklch(52.9% 0.18 142.5)",
+        "dark": "#008300",
+        "tonalRamp": ["#000100", "#000700", "#001500", "#002f00", "#095308", "#268021", "#5eb358", "#c2e8be"]
+      },
+      "series-7": {
+        "role": "series",
+        "displayName": "Violet",
+        "canonical": "oklch(52.7% 0.197 283.4)",
+        "dark": "#9085e9",
+        "tonalRamp": ["#010007", "#040025", "#0c0457", "#1a0f97", "#3026d8", "#524eff", "#888aff", "#d5d7ff"]
+      },
+      "series-8": {
+        "role": "series",
+        "displayName": "Brick",
+        "canonical": "oklch(62.3% 0.191 24.9)",
+        "dark": "#e66767",
+        "tonalRamp": ["#040000", "#130000", "#370001", "#750204", "#b31110", "#eb322c", "#ff7269", "#ffcfca"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Graphite",
+        "canonical": "oklch(15.0% 0.0 89.9)",
+        "dark": "#f0efec",
+        "tonalRamp": ["#010101", "#050505", "#0e0e0e", "#1f1f1f", "#393939", "#606060", "#959595", "#dbdbdb"]
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Slate Ink",
+        "canonical": "oklch(43.5% 0.005 91.5)",
+        "dark": "#c3c2b7",
+        "tonalRamp": ["#010101", "#050504", "#0e0e0d", "#1f1f1d", "#3a3936", "#61605c", "#969592", "#dbdbd9"]
+      },
+      "ink-3": {
+        "role": "neutral",
+        "displayName": "Muted Ink",
+        "canonical": "oklch(53.8% 0.008 97.4)",
+        "dark": "#9a988f",
+        "tonalRamp": ["#010101", "#050504", "#0e0e0c", "#1f1f1c", "#3a3935", "#61605b", "#969590", "#dbdbd8"]
+      },
+      "page": {
+        "role": "neutral",
+        "displayName": "Paper White",
+        "canonical": "oklch(98.2% 0.003 106.4)",
+        "dark": "#0d0d0d",
+        "tonalRamp": ["#010101", "#050504", "#0e0e0d", "#1f1f1e", "#393938", "#60605e", "#959593", "#dbdbda"]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Warm White",
+        "canonical": "oklch(99.1% 0.001 106.4)",
+        "dark": "#1a1a19",
+        "tonalRamp": ["#010101", "#050505", "#0e0e0e", "#1f1f1e", "#393938", "#60605f", "#959594", "#dbdbda"]
+      },
+      "surface-2": {
+        "role": "neutral",
+        "displayName": "Parchment Grey",
+        "canonical": "oklch(96.1% 0.005 95.1)",
+        "dark": "#151514",
+        "tonalRamp": ["#010101", "#050504", "#0e0e0d", "#1f1f1c", "#3a3936", "#61605c", "#969591", "#dbdbd9"]
+      },
+      "good": {
+        "role": "status",
+        "displayName": "Good Green",
+        "canonical": "oklch(62.1% 0.207 142.6)",
+        "dark": "#0ca30c",
+        "tonalRamp": ["#000100", "#000700", "#001500", "#002f00", "#025702", "#1d8419", "#56b750", "#beebba"]
+      },
+      "warning": {
+        "role": "status",
+        "displayName": "Warning Amber",
+        "canonical": "oklch(81.1% 0.164 78.5)",
+        "dark": "#fab219",
+        "tonalRamp": ["#020100", "#090400", "#190b00", "#371900", "#682f00", "#a45208", "#d18a3c", "#f4d7af"]
+      },
+      "serious": {
+        "role": "status",
+        "displayName": "Serious Coral",
+        "canonical": "oklch(71.7% 0.141 41.6)",
+        "dark": "#ec835a",
+        "tonalRamp": ["#030000", "#0f0200", "#2b0500", "#590c01", "#8c200c", "#c04326", "#ea7c5c", "#ffd0c0"]
+      },
+      "critical": {
+        "role": "status",
+        "displayName": "Critical Red",
+        "canonical": "oklch(57.5% 0.186 25.2)",
+        "dark": "#d03b3b",
+        "tonalRamp": ["#040000", "#130000", "#370001", "#730204", "#af1210", "#e8332c", "#ff7268", "#ffcfca"]
+      }
+    },
+    "typographyMeta": {
+      "page-title": { "displayName": "Page title", "purpose": "The h1 of each view." },
+      "panel-title": { "displayName": "Panel title", "purpose": "The h2 of each panel." },
+      "figure": { "displayName": "Figure", "purpose": "The five summary values. Figures are numbers, not headings." },
+      "body": { "displayName": "Body", "purpose": "Running text; lede capped at 65ch." },
+      "label": { "displayName": "Label", "purpose": "Controls, table cells, legends." },
+      "caption": { "displayName": "Caption", "purpose": "Axis ticks, hints, rail counts; tabular numerals." }
+    },
+    "shadows": [
+      { "name": "tooltip-lift", "value": "0 2px 8px rgba(0, 0, 0, 0.10)", "purpose": "The one shared chart tooltip. The only shadow in the system." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.2, 0.7, 0.2, 1)", "purpose": "Default easing for state transitions (--ease)." },
+      { "name": "duration-standard", "value": "180ms", "purpose": "Default state transition and dialog open (--dur). Transitions are removed under prefers-reduced-motion." }
+    ],
+    "breakpoints": [
+      { "name": "panels-stack", "value": "1100px", "purpose": "Half and third panels span the full width." },
+      { "name": "shell-stacks", "value": "860px", "purpose": "Rail becomes a horizontal strip; top bar and shell stack." },
+      { "name": "compact", "value": "600px", "purpose": "Gutter 1rem; figures two to a row; filters in two columns." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one primary action on a surface. Cobalt fill, white text.",
+      "html": "<button class=\"ds-btn ds-btn-primary\" type=\"button\">Apply</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; gap: 0.4rem; min-height: 2rem; padding: 0.3rem 0.7rem; border: 1px solid var(--accent); border-radius: 4px; background: var(--accent); color: var(--accent-ink); font: inherit; font-size: 0.8125rem; white-space: nowrap; cursor: pointer; transition: background 180ms cubic-bezier(0.2, 0.7, 0.2, 1), border-color 180ms cubic-bezier(0.2, 0.7, 0.2, 1); } .ds-btn-primary:hover { filter: brightness(1.05); } .ds-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; } .ds-btn:disabled { color: var(--ink-3); background: var(--surface-2); border-color: var(--border); cursor: not-allowed; }"
+    },
+    {
+      "name": "Default Button",
+      "kind": "button",
+      "refersTo": "button-default",
+      "description": "Secondary actions. Warm white fill with a hairline border; accent wash on hover.",
+      "html": "<button class=\"ds-btn ds-btn-default\" type=\"button\">Reset</button>",
+      "css": ".ds-btn-default { border: 1px solid var(--border); background: var(--surface); color: var(--ink); } .ds-btn-default:hover { background: var(--accent-wash); } .ds-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Low-emphasis action inside a toolbar. No border at rest.",
+      "html": "<button class=\"ds-btn ds-btn-ghost\" type=\"button\">Dark</button>",
+      "css": ".ds-btn-ghost { border: 1px solid transparent; background: transparent; color: var(--ink); } .ds-btn-ghost:hover { background: var(--accent-wash); }"
+    },
+    {
+      "name": "Segmented Preset",
+      "kind": "custom",
+      "refersTo": "presets",
+      "description": "Date-range presets. The selected option is a cobalt fill.",
+      "html": "<div class=\"ds-seg\" role=\"group\" aria-label=\"Date range\"><button type=\"button\" aria-pressed=\"false\">Month</button><button type=\"button\" aria-pressed=\"true\">Quarter</button><button type=\"button\" aria-pressed=\"false\">Year</button></div>",
+      "css": ".ds-seg { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; background: var(--surface); } .ds-seg button { border: 0; background: transparent; padding: 0.35rem 0.6rem; font: inherit; font-size: 0.8125rem; color: var(--ink-2); cursor: pointer; transition: background 180ms cubic-bezier(0.2, 0.7, 0.2, 1), color 180ms cubic-bezier(0.2, 0.7, 0.2, 1); } .ds-seg button + button { border-left: 1px solid var(--border); } .ds-seg button:hover { background: var(--accent-wash); color: var(--ink); } .ds-seg button[aria-pressed=\"true\"] { background: var(--accent); color: var(--accent-ink); }"
+    },
+    {
+      "name": "Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Filter selects and the transaction search field.",
+      "html": "<label class=\"ds-field\"><span>Category</span><select class=\"ds-input\"><option>All categories</option></select></label>",
+      "css": ".ds-field { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.8125rem; color: var(--ink-2); } .ds-input { min-height: 2rem; padding: 0.3rem 0.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; color: var(--ink); font: inherit; } .ds-input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }"
+    },
+    {
+      "name": "Navigation Link",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "Left rail section link. The current section gets a surface fill and a 2px inset accent bar.",
+      "html": "<a class=\"ds-nav\" href=\"#\">Overview</a><a class=\"ds-nav\" href=\"#\" aria-current=\"page\">Cash flow</a>",
+      "css": ".ds-nav { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; padding: 0.45rem 0.6rem; border-radius: 4px; color: var(--ink-2); text-decoration: none; font-size: 0.8125rem; } .ds-nav:hover { background: var(--accent-wash); color: var(--ink); } .ds-nav[aria-current=\"page\"] { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: inset 2px 0 0 var(--accent); } .ds-nav:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }"
+    },
+    {
+      "name": "Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "The only container for page content. Bordered, never nested, flat at rest.",
+      "html": "<section class=\"ds-panel\"><header class=\"ds-panel-head\"><h2>Top merchants</h2><p class=\"ds-panel-desc\">Spend in the selected range</p></header></section>",
+      "css": ".ds-panel { min-width: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.9rem 1rem 1rem; } .ds-panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; margin-bottom: 0.6rem; flex-wrap: wrap; } .ds-panel-head h2 { font-size: 1.1875rem; font-weight: 600; margin: 0; } .ds-panel-desc { font-size: 0.8125rem; color: var(--ink-2); margin: 0.15rem 0 0; }"
+    },
+    {
+      "name": "Needs Review Badge",
+      "kind": "chip",
+      "refersTo": "badge-review",
+      "description": "Marks a transaction the owner should check. Text prefix carries the meaning; colour only reinforces it.",
+      "html": "<span class=\"ds-badge\">Needs review</span>",
+      "css": ".ds-badge { display: inline-block; font-size: 0.75rem; padding: 0.05rem 0.4rem; border-radius: 999px; border: 1px solid var(--serious); color: var(--ink-2); white-space: nowrap; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Personal Financial Analyst",
+    "overview": "The interface works like an analyst's desk, and its advice is plain. The owner is reading their own statements, so the screen leads with exact figures and their sources: five plain numbers above the monthly cash-flow chart, then a drill from category to sub-category to shop without leaving the page.\n\nThe system is quiet on purpose. A paper-white ground, graphite text, 1px hairlines, and one cobalt accent carry the structure. Colour in the charts is reserved for categories and labelled directly. Nothing decorative competes with a figure, and nothing shows a figure without its source.\n\nThe advice answer is the only element that leaves the page. It opens in a native dialog, separated from the data it discusses.",
+    "keyCharacteristics": [
+      "Cool neutral ground, graphite text, and one cobalt accent.",
+      "Flat surfaces, structured by hairlines rather than shadows.",
+      "Five plain figures above a full-width chart. No hero numbers and no gradient tiles.",
+      "Eight categorical chart colours, always paired with direct labels or a legend.",
+      "Compact, system-font Operate controls."
+    ],
+    "rules": [
+      { "name": "The One Accent Rule", "body": "Cobalt marks only what is selected, focused, or the primary action. Series 1 shares the hue by design, and no other element uses it.", "section": "colors" },
+      { "name": "The Status Is Never Identity Rule", "body": "Status colours never name a series or category. Each is paired with a text label or an icon.", "section": "colors" },
+      { "name": "The Three Step Rule", "body": "Each heading step is at least 1.25 times the step below it, so the page title, panel title, and body read as three distinct levels.", "section": "typography" },
+      { "name": "The Hairline Rule", "body": "Structure is drawn with 1px borders. Panels never nest, and they never gain a shadow at rest.", "section": "elevation" },
+      { "name": "The Table Twin Rule", "body": "No chart value may be reachable only through a hover. Each chart ships with its table.", "section": "components" }
+    ],
+    "dos": [
+      "Do reserve Clear Cobalt (#2a78d6) for the primary action, the selected item, focus, and series 1.",
+      "Do pair every colour-coded status or series with a text label, a legend entry, or an icon.",
+      "Do give each chart a table twin in the DOM.",
+      "Do label estimates as estimates in the text, for example the emergency fund and loan balances until the owner enters them.",
+      "Do use the 1px hairline border for panel and section structure."
+    ],
+    "donts": [
+      "Don't use gradients, glows, or drop shadows on panels, figures, or charts at rest.",
+      "Don't nest panels, or use cards as the page's structure.",
+      "Don't use emoji or Unicode symbols as icons.",
+      "Don't load web fonts. The stack is system-ui.",
+      "Don't cycle chart colours beyond eight categories, or use a ninth generated hue.",
+      "Don't hard-code colour values outside web/css/tokens.css. Reference the tokens by role."
+    ]
+  }
+}
