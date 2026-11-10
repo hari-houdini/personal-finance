@@ -7,16 +7,16 @@
       "accent": {
         "role": "primary",
         "displayName": "Clear Cobalt",
-        "canonical": "oklch(57.5% 0.163 255.5)",
+        "canonical": "oklch(55.7% 0.156 255.3)",
         "dark": "#3987e5",
-        "tonalRamp": ["#000104", "#000414", "#000d3a", "#001d7e", "#0b39b8", "#2663ea", "#619aff", "#c6ddff"]
+        "tonalRamp": ["#000104", "#000414", "#000d39", "#011d78", "#0c3ab1", "#2763e3", "#609aff", "#c6deff"]
       },
       "series-1": {
         "role": "series",
         "displayName": "Clear Cobalt (series 1)",
-        "canonical": "oklch(57.5% 0.163 255.5)",
+        "canonical": "oklch(55.7% 0.156 255.3)",
         "dark": "#3987e5",
-        "tonalRamp": ["#000104", "#000414", "#000d3a", "#001d7e", "#0b39b8", "#2663ea", "#619aff", "#c6ddff"]
+        "tonalRamp": ["#000104", "#000414", "#000d39", "#011d78", "#0c3ab1", "#2763e3", "#609aff", "#c6deff"]
       },
       "series-2": {
         "role": "series",
@@ -243,7 +243,7 @@
       { "name": "The Table Twin Rule", "body": "No chart value may be reachable only through a hover. Each chart ships with its table.", "section": "components" }
     ],
     "dos": [
-      "Do reserve Clear Cobalt (#2a78d6) for the primary action, the selected item, focus, and series 1.",
+      "Do reserve Clear Cobalt (#2873cc) for the primary action, the selected item, focus, and series 1.",
       "Do pair every colour-coded status or series with a text label, a legend entry, or an icon.",
       "Do give each chart a table twin in the DOM.",
       "Do label estimates as estimates in the text, for example the emergency fund and loan balances until the owner enters them.",

@@ -19,13 +19,13 @@
   --ink-3: #6f6e69;           /* muted labels; 4.5:1 on the light surface */
 
   /* Accent: primary action, current selection, focus. Blue is also series slot 1 by design. */
-  --accent: #2a78d6;
+  --accent: #2873cc;
   --accent-ink: #ffffff;
-  --accent-wash: rgba(42, 120, 214, 0.10);
-  --focus: #2a78d6;
+  --accent-wash: rgba(40, 115, 204, 0.10);
+  --focus: #2873cc;
 
   /* Categorical slots (fixed order, never cycled) */
-  --series-1: #2a78d6;
+  --series-1: #2873cc;
   --series-2: #eb6834;
   --series-3: #1baf7a;
   --series-4: #eda100;
@@ -41,6 +41,8 @@
   --warning: #fab219;
   --serious: #ec835a;
   --critical: #d03b3b;
+  /* Status used as text on light surfaces: the bright coral fails 4.5:1 on parchment */
+  --serious-text: #a84a24;
   --good-text: #006300;
 
   /* Diverging midpoint */
@@ -90,6 +92,7 @@
     --series-6: #008300;
     --series-7: #9085e9;
     --series-8: #e66767;
+    --serious-text: #ec835a;
     --series-ink-on-light: #ffffff;
     --good-text: #0ca30c;
     --diverge-mid: #383835;
@@ -119,6 +122,7 @@
   --series-6: #008300;
   --series-7: #9085e9;
   --series-8: #e66767;
+  --serious-text: #ec835a;
   --good-text: #0ca30c;
   --diverge-mid: #383835;
 }

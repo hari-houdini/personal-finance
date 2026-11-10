@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "web/index.html"
+        ],
+        "createdAt": "2026-11-10T20:53:19.635Z",
+        "reason": "Assistant triage, not user-confirmed: static scan of web/index.html cannot resolve /static/css stylesheets, so role sizes read as 16px. Rendered page (detect on http://127.0.0.1:8000/) reports no findings; computed sizes are 26px h1, 19px panel titles, 15px body (1.37x and 1.27x steps, per DESIGN.md Three Step Rule)."
+      }
+    ]
+  }
+}

@@ -11,10 +11,10 @@ colors:
   ink: "#0b0b0b"
   ink-2: "#52514e"
   ink-3: "#6f6e69"
-  accent: "#2a78d6"
+  accent: "#2873cc"
   accent-ink: "#ffffff"
-  accent-wash: "rgba(42, 120, 214, 0.10)"
-  series-1: "#2a78d6"
+  accent-wash: "rgba(40, 115, 204, 0.10)"
+  series-1: "#2873cc"
   series-2: "#eb6834"
   series-3: "#1baf7a"
   series-4: "#eda100"
@@ -137,7 +137,7 @@ Note for future work: the surface brief's earlier paper-and-teal direction (warm
 A cool paper-white ground with near-black ink and a single saturated blue accent. The eight-hue categorical palette exists only for chart series.
 
 ### Primary
-- **Clear Cobalt** (#2a78d6; dark theme #3987e5): The one accent. It marks the primary action, the selected preset or tab, the current rail section, focus rings, and chart series 1.
+- **Clear Cobalt** (#2873cc; dark theme #3987e5): The one accent. It marks the primary action, the selected preset or tab, the current rail section, focus rings, and chart series 1.
 
 ### Secondary
 - **Ember** (#eb6834; dark #d95926), **Sea Green** (#1baf7a; dark #199e70), **Marigold** (#eda100; dark #c98500), **Rose** (#e87ba4; dark #d55181), **Forest** (#008300; the same in both themes), **Violet** (#6250d6; dark #9085e9), and **Brick** (#e34948; dark #e66767): chart series 2 to 8, in slot order. They are never cycled. Any ninth category folds into "Other".
@@ -153,7 +153,7 @@ A cool paper-white ground with near-black ink and a single saturated blue accent
 - **Hairline** (rgba(11, 11, 11, 0.10)): every border.
 
 ### Status
-- **Good Green** (#0ca30c; text #006300), **Warning Amber** (#fab219), **Serious Coral** (#ec835a), and **Critical Red** (#d03b3b). These carry meaning only, such as "needs review" or an attention count, and are never used to identify a series.
+- **Good Green** (#0ca30c; text #006300), **Warning Amber** (#fab219), **Serious Coral** (#ec835a), and **Critical Red** (#d03b3b). These carry meaning only, such as "needs review" or an attention count, and are never used to identify a series. Where a status colour is used as text on a light surface, Serious Coral deepens to Burnt Sienna (#a84a24, token `--serious-text`) so it meets 4.5:1 on Parchment Grey. The brighter coral stays for text on dark surfaces.
 
 Dark theme applies when the OS is set to dark, or when the viewer picks it with the Dark button. An explicit light setting wins over the OS. The charcoal ground is #0d0d0d, panels are #1a1a19, and text is #f0efec.
 
@@ -234,7 +234,7 @@ Each component leads with its character, then its states.
 - **Style:** Slate Ink 13px links with 0.45rem by 0.6rem padding.
 - **Hover:** Accent wash, with text shifting to Graphite.
 - **Current:** Warm White fill, Graphite text at weight 600, and a 2px inset accent bar.
-- **Counts:** 12px tabular numerals in Muted Ink. The attention count is Serious Coral at weight 600.
+- **Counts:** 12px tabular numerals in Muted Ink. The attention count is Serious Coral at weight 600 (Burnt Sienna on light surfaces, for contrast).
 
 ### Panels
 - **Corner Style:** 6px radius.
@@ -265,7 +265,7 @@ Each component leads with its character, then its states.
 ## Do's and Don'ts
 
 ### Do:
-- **Do** reserve Clear Cobalt (#2a78d6) for the primary action, the selected item, focus, and series 1.
+- **Do** reserve Clear Cobalt (#2873cc) for the primary action, the selected item, focus, and series 1.
 - **Do** pair every colour-coded status or series with a text label, a legend entry, or an icon.
 - **Do** give each chart a table twin in the DOM.
 - **Do** label estimates as estimates in the text, for example the emergency fund and loan balances until the owner enters them.

@@ -89,11 +89,11 @@ export function debtBars(host, stab) {
   const items = stab.debt?.monthly_payments || [];
   if (!items.length) return emptyState(host, "No debt payments in the baseline window.");
   const width = measure(host);
-  const rowH = 30;
-  const labelW = Math.min(170, width * 0.38);
-  const height = items.length * rowH + 16;
+  const rowH = 46;
+  const barH = 14;
+  const height = items.length * rowH + 4;
   const max = d3.max(items, (d) => d.monthly_payment) || 1;
-  const x = d3.scaleLinear().domain([0, max]).nice().range([labelW, width - 70]);
+  const x = d3.scaleLinear().domain([0, max]).nice().range([0, width - 64]);
   const plot = frame(host, {
     label: "Bars of monthly debt payments by type",
     table: {
@@ -105,11 +105,11 @@ export function debtBars(host, stab) {
   });
   const svg = svgRoot(plot, width, height, "Bars of monthly debt payments by type");
   items.forEach((d, i) => {
-    const y = i * rowH + 4;
-    svg.append("text").attr("x", labelW - 8).attr("y", y + 11).attr("text-anchor", "end").attr("class", "label-strong").attr("font-size", 12).text(subLabel(d.subcategory_id));
-    const bar = svg.append("rect").attr("x", labelW).attr("y", y).attr("width", Math.max(2, x(d.monthly_payment) - labelW)).attr("height", 16).attr("rx", 2).attr("fill", KIND_COLOR.debt);
+    const y = i * rowH + 2;
+    svg.append("text").attr("x", 0).attr("y", y + 12).attr("class", "label-strong").attr("font-size", 12).text(subLabel(d.subcategory_id));
+    const bar = svg.append("rect").attr("x", 0).attr("y", y + 18).attr("width", Math.max(2, x(d.monthly_payment))).attr("height", barH).attr("rx", 2).attr("fill", KIND_COLOR.debt);
     hitTarget(bar, { title: subLabel(d.subcategory_id), rows: [{ label: "A month", value: money(d.monthly_payment) }] });
-    svg.append("text").attr("x", x(d.monthly_payment) + 6).attr("y", y + 12).attr("font-size", 11).text(compactMoney(d.monthly_payment));
+    svg.append("text").attr("x", x(d.monthly_payment) + 6).attr("y", y + 18 + barH - 3).attr("font-size", 11).text(compactMoney(d.monthly_payment));
   });
 }
 
@@ -165,7 +165,9 @@ export function runway(host, stab) {
     svg.append("line").attr("x1", x(r.month) - 2).attr("x2", x(r.month) + x.bandwidth() + 2)
       .attr("y1", y(r.target)).attr("y2", y(r.target)).attr("stroke", "var(--ink)").attr("stroke-width", 2);
   });
+  const step = Math.max(1, Math.ceil(44 / x.bandwidth()));
+  const monthTicks = rows.map((r) => r.month).filter((_, i) => i % step === 0);
   svg.append("g").attr("class", "axis").attr("transform", `translate(0,${height - M.bottom})`)
-    .call(d3.axisBottom(x).tickFormat(monthLabel).tickSize(0).tickPadding(8))
+    .call(d3.axisBottom(x).tickValues(monthTicks).tickFormat(monthLabel).tickSize(0).tickPadding(8))
     .call((g) => g.select(".domain").remove());
 }

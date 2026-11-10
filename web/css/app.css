@@ -44,7 +44,7 @@ button, select, input, textarea { font: inherit; color: inherit; }
 .filters { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
 .presets { display: inline-flex; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
 .presets button {
-  border: 0; background: transparent; padding: 0.35rem 0.6rem; cursor: pointer;
+  border: 0; background: transparent; padding: 0.35rem 0.6rem; cursor: pointer; white-space: nowrap;
   font-size: var(--t-sm); color: var(--ink-2);
   transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
 }
@@ -55,7 +55,7 @@ button, select, input, textarea { font: inherit; color: inherit; }
 .field { display: inline-flex; align-items: center; gap: 0.35rem; font-size: var(--t-sm); color: var(--ink-2); }
 .field select, .field input[type="date"] {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
-  padding: 0.3rem 0.45rem; min-height: 2rem; color: var(--ink);
+  padding: 0.3rem 0.45rem; min-height: 2rem; max-width: 13rem; color: var(--ink);
 }
 
 .actions { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: flex-end; }
@@ -100,7 +100,7 @@ button, select, input, textarea { font: inherit; color: inherit; }
   font-variant-numeric: tabular-nums; font-size: var(--t-xs);
   color: var(--ink-3); min-width: 1.5rem; text-align: right;
 }
-.rail .count.attention { color: var(--serious); font-weight: 600; }
+.rail .count.attention { color: var(--serious-text); font-weight: 600; }
 
 main.content { padding: 1.25rem 1.5rem 4rem; min-width: 0; max-width: 1280px; width: 100%; }
 main.content.is-refreshing { opacity: 0.55; transition: opacity var(--dur) var(--ease); }
