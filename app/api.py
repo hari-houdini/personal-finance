@@ -6,6 +6,7 @@ Binds to 127.0.0.1 only (see README.md for the run command). Nothing here touche
 from __future__ import annotations
 
 import json
+import math
 import re
 
 from fastapi import FastAPI, HTTPException, Query
@@ -138,14 +139,34 @@ def _read_optional(path) -> dict:
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
 
 
+def _pins(raw: str | None) -> dict[str, float] | None:
+    """Parse the owner's hand-set category amounts: a JSON object of line ID to pounds."""
+    if raw is None:
+        return None
+    try:
+        value = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise HTTPException(422, "allocations must be a JSON object") from exc
+    if not isinstance(value, dict) or not all(
+        isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v) and v >= 0 for v in value.values()
+    ):
+        raise HTTPException(422, "allocations must map category IDs to amounts of zero or more")
+    return {str(k): float(v) for k, v in value.items()}
+
+
 @app.get("/api/budget")
-def get_budget(saving: float | None = Query(None, ge=0), bike_sold: bool | None = None) -> dict:
+def get_budget(
+    saving: float | None = Query(None, ge=0),
+    bike_sold: bool | None = None,
+    allocations: str | None = Query(None, description="JSON object of variable category ID to pounds, for categories set by hand"),
+) -> dict:
     """Budget plan for one monthly saving amount. saving defaults to the savings-rate target, capped at what is affordable."""
     baseline_path = REPORTS_DIR / "budget_baseline.json"
     if not baseline_path.exists():
         raise HTTPException(409, "No budget baseline yet. Run the import first.")
+    pins = _pins(allocations)
     taxonomy = json.loads((CONFIG_DIR / "taxonomy.json").read_text(encoding="utf-8"))
-    return budget.compute_plan(
+    plan = budget.compute_plan(
         baseline_data=json.loads(baseline_path.read_text(encoding="utf-8")),
         rules=json.loads((CONFIG_DIR / "budget.json").read_text(encoding="utf-8")),
         local=_read_optional(LOCAL_CONFIG_DIR / "budget.json"),
@@ -154,7 +175,14 @@ def get_budget(saving: float | None = Query(None, ge=0), bike_sold: bool | None 
         names=budget.subcategory_names(taxonomy),
         saving=saving,
         bike_sold=bike_sold,
+        allocations=pins,
     )
+    if pins:
+        variable = {line["id"] for line in plan["protected"]["lines"] + plan["discretionary"]["lines"]}
+        unknown = sorted(set(pins) - variable)
+        if unknown:
+            raise HTTPException(422, f"unknown variable category {unknown[0]}")
+    return plan
 
 
 class Reclassify(BaseModel):

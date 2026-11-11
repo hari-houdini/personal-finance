@@ -192,3 +192,46 @@ def test_benchmarks_and_energy_cap_flag_are_returned():
     assert plan["benchmarks"]["water"]["yours"] is None  # no water bill in the latest-month rule set
     flags = [f for f in plan["flags"] if "Ofgem cap" in f]
     assert flags and "172.14" in flags[0]  # 151 × 1.14
+
+
+def test_card_repayments_are_fixed_monthly_lines():
+    local = {**LOCAL, "card_repayments": [{"name": "Virgin Money", "monthly": 150}, {"name": "Barclaycard", "monthly": 150}]}
+    plan = _plan(saving=300, local=local)
+    cards = {line["id"]: line for line in plan["mandatory"]["lines"] if line["id"].startswith("card.")}
+    assert cards["card.virgin_money"]["amount"] == 150.0
+    assert cards["card.barclaycard"]["name"] == "Barclaycard card repayment"
+    assert plan["mandatory"]["total"] == round(_plan(saving=300)["mandatory"]["total"] + 300, 2)
+
+
+def test_unaffordable_target_defaults_to_the_maximum_and_flags_the_gap():
+    local = {**LOCAL, "card_repayments": [{"name": "Virgin Money", "monthly": 400}, {"name": "Barclaycard", "monthly": 400}, {"name": "Capital One", "monthly": 400}]}
+    plan = _plan(local=local)
+    assert plan["saving"]["target"] == 760.0
+    assert plan["saving"]["value"] == plan["saving"]["max"] == 640.0
+    assert any("not affordable" in flag and "£120.00 short" in flag for flag in plan["flags"])
+
+
+def test_pinned_category_keeps_its_amount_and_the_rest_share_the_pool():
+    plan = _plan(saving=300, allocations={"eating_out.cafes_coffee": 100})
+    cafes = next(line for line in plan["discretionary"]["lines"] if line["id"] == "eating_out.cafes_coffee")
+    other = next(line for line in plan["discretionary"]["lines"] if line["id"] == "transfers.family_out")
+    assert cafes["allowance"] == 100.0 and cafes["pinned"] is True
+    assert other["pinned"] is False
+    total = plan["mandatory"]["total"] + plan["protected"]["total"] + plan["saving"]["value"] + cafes["allowance"] + other["allowance"]
+    assert abs(total - plan["income"]["total"]) < 0.05
+    assert plan["pins"]["unassigned"] == 0 and plan["pins"]["scaled"] is False
+
+
+def test_pins_above_the_pool_are_scaled_down_and_flagged():
+    plan = _plan(saving=300, allocations={"eating_out.cafes_coffee": 5000})
+    cafes = next(line for line in plan["discretionary"]["lines"] if line["id"] == "eating_out.cafes_coffee")
+    assert plan["pins"]["scaled"] is True
+    assert cafes["allowance"] == plan["variable_pool"]
+    assert any("scaled down" in flag for flag in plan["flags"])
+
+
+def test_every_line_pinned_below_the_pool_leaves_an_unassigned_amount():
+    pins = {"eating_out.cafes_coffee": 100, "transfers.family_out": 50, "food.supermarket": 150, "family.protected": 300}
+    plan = _plan(saving=300, allocations=pins)
+    assert plan["pins"]["unassigned"] == round(plan["variable_pool"] - 600, 2)
+    assert any("not given to any category" in flag for flag in plan["flags"])

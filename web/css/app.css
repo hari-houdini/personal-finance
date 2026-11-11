@@ -385,6 +385,11 @@ dialog.advice[open] { animation: dialog-in var(--dur) var(--ease); }
 .budget-rows li > strong { font-variant-numeric: tabular-nums; }
 .budget-rows .budget-bar { grid-column: 1 / -1; height: 0.45rem; background: var(--border); border-radius: 999px; overflow: hidden; }
 .budget-rows .budget-bar > span { display: block; height: 100%; background: var(--accent); }
+.budget-rows li.budget-line > input[type="range"] { grid-column: 1 / -1; width: 100%; accent-color: var(--accent); margin: 0.3rem 0 0; }
+.budget-actions { display: flex; flex-wrap: wrap; gap: 0.5rem 0.9rem; align-items: center; margin-top: 0.7rem; }
+.budget-reset { font: inherit; font-size: var(--t-sm); padding: 0.35rem 0.8rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: inherit; cursor: pointer; }
+.budget-reset:disabled { opacity: 0.5; cursor: default; }
+.budget-actions .help { margin: 0; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }

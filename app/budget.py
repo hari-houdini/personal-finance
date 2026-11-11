@@ -156,6 +156,55 @@ def baseline(records: list[dict], rules: dict, local: dict, today: date) -> dict
     }
 
 
+def _slug(name: str) -> str:
+    return "card." + re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
+
+
+def _split(
+    pool: float,
+    protected: list[tuple[str, float]],
+    discretionary: list[tuple[str, float]],
+    pins: dict[str, float],
+) -> tuple[dict[str, float], bool, float]:
+    """Share the variable pool across the variable lines. Returns (allowance by line, pins scaled down, unassigned).
+
+    Pinned lines keep the amount the owner set. If the pins add up to more than the pool, they are scaled down together.
+    The rest is shared in this order: unpinned protected lines take their usual spend first, so protected spending is cut
+    last; then unpinned discretionary lines share what is left in proportion to usual spend. If no discretionary line is
+    free, the protected lines take the surplus. `unassigned` is above zero only when every line is pinned and the pins
+    fall short of the pool.
+    """
+    known = {sub for sub, _ in protected} | {sub for sub, _ in discretionary}
+    pinned = {k: max(0.0, float(v)) for k, v in pins.items() if k in known}
+    pin_total = sum(pinned.values())
+    scaled = pin_total > pool
+    if scaled and pin_total > 0:
+        pinned = {k: v * pool / pin_total for k, v in pinned.items()}
+        pin_total = pool
+    amounts = dict(pinned)
+    rest = max(0.0, pool - pin_total)
+
+    free_prot = [(sub, avg) for sub, avg in protected if sub not in pinned]
+    free_disc = [(sub, avg) for sub, avg in discretionary if sub not in pinned]
+    prot_usual = sum(avg for _, avg in free_prot)
+    if prot_usual <= rest:
+        amounts.update(free_prot)
+        rest -= prot_usual
+    else:
+        amounts.update({sub: avg * rest / prot_usual for sub, avg in free_prot})
+        rest = 0.0
+    if free_disc:
+        disc_usual = sum(avg for _, avg in free_disc)
+        for sub, avg in free_disc:
+            amounts[sub] = rest * avg / disc_usual if disc_usual else rest / len(free_disc)
+        rest = 0.0
+    elif free_prot and rest > 0:
+        for sub, avg in free_prot:
+            amounts[sub] += rest * avg / prot_usual if prot_usual else rest / len(free_prot)
+        rest = 0.0
+    return {k: _money(v) for k, v in amounts.items()}, scaled, _money(rest)
+
+
 def _months_to(target: float, balance: float | None, saving: float) -> float | None:
     if balance is None:
         return None
@@ -190,8 +239,12 @@ def compute_plan(
     names: dict[str, str],
     saving: float | None = None,
     bike_sold: bool | None = None,
+    allocations: dict[str, float] | None = None,
 ) -> dict:
-    """Allowances for one monthly saving amount. The slider sets `saving`; everything else follows from it."""
+    """Allowances for one monthly saving amount. The slider sets `saving`; everything else follows from it.
+
+    `allocations` pins the variable categories the owner set by hand (line ID to pounds). The other variable lines share the rest.
+    """
     base = _amount(local.get("base_salary"))
     household = _amount(local.get("household_contribution"))
     income = base + household
@@ -212,6 +265,11 @@ def compute_plan(
         mandatory_lines.append({"id": "family.education_loan", "name": "Education loan", "amount": education_loan, "basis": "config/local/budget.json"})
     if bike_cost > 0:
         mandatory_lines.append({"id": "bike.insurance", "name": "Motorbike insurance (while you own it)", "amount": bike_cost, "basis": "trailing average"})
+    for card in local.get("card_repayments") or []:
+        name = str(card.get("name") or "Card")
+        monthly = _money(float(card.get("monthly") or 0))
+        if monthly > 0:
+            mandatory_lines.append({"id": _slug(name), "name": f"{name} card repayment", "amount": monthly, "basis": "planned, config/local/budget.json"})
     mandatory_total = sum(line["amount"] for line in mandatory_lines)
 
     protected_hist = baseline_data.get("protected", {})
@@ -222,28 +280,35 @@ def compute_plan(
     saving = default_saving if saving is None else min(max(0.0, float(saving)), max_saving)
 
     spend_budget = income - mandatory_total - saving
-    scale = 1.0
-    if protected_hist_total > 0 and spend_budget < protected_hist_total:
-        scale = max(0.0, spend_budget) / protected_hist_total
-    protected_lines = [
-        {"id": sub, "name": names.get(sub, sub), "historical": avg, "allowance": _money(avg * scale)}
-        for sub, avg in sorted(protected_hist.items(), key=lambda kv: -kv[1])
-    ]
+    pool = max(0.0, spend_budget)
+    protected_items = sorted(protected_hist.items(), key=lambda kv: -kv[1])
     if family_protected:
-        protected_lines.append({"id": "family.protected", "name": "Family support (protected)", "historical": family_protected, "allowance": _money(family_protected * scale)})
-    protected_allowed = sum(line["allowance"] for line in protected_lines)
-
-    discretionary_budget = max(0.0, spend_budget - protected_allowed)
+        protected_items.append(("family.protected", family_protected))
     disc_hist = baseline_data.get("discretionary", {})
-    disc_hist_total = sum(disc_hist.values())
-    discretionary_lines = [
+    disc_items = sorted(disc_hist.items(), key=lambda kv: -kv[1])
+    pins = allocations or {}
+    amounts, pins_scaled, unassigned = _split(pool, protected_items, disc_items, pins)
+
+    protected_names = {"family.protected": "Family support (protected)"}
+    protected_lines = [
         {
             "id": sub,
-            "name": names.get(sub, sub),
+            "name": protected_names.get(sub) or names.get(sub, sub),
             "historical": avg,
-            "allowance": _money(discretionary_budget * avg / disc_hist_total) if disc_hist_total else 0.0,
+            "allowance": amounts[sub],
+            "pinned": sub in pins,
         }
-        for sub, avg in sorted(disc_hist.items(), key=lambda kv: -kv[1])
+        for sub, avg in protected_items
+    ]
+    protected_allowed = sum(line["allowance"] for line in protected_lines)
+    protected_usual_total = sum(avg for _, avg in protected_items)
+    scale = round(protected_allowed / protected_usual_total, 4) if protected_usual_total else 1.0
+
+    discretionary_budget = max(0.0, pool - protected_allowed)
+    disc_hist_total = sum(disc_hist.values())
+    discretionary_lines = [
+        {"id": sub, "name": names.get(sub, sub), "historical": avg, "allowance": amounts[sub], "pinned": sub in pins}
+        for sub, avg in disc_items
     ]
 
     balance = user_balances.get("emergency_fund_balance")
@@ -272,6 +337,12 @@ def compute_plan(
     debts.sort(key=lambda d: -d["apr"])
 
     flags: list[str] = []
+    target_money = _money(target_rate * income)
+    if max_saving < target_money:
+        flags.append(
+            f"A {target_rate:.0%} saving (£{target_money:,.2f} a month) is not affordable with these fixed costs and protected spending. "
+            f"The most that fits is £{max_saving:,.2f}, £{target_money - max_saving:,.2f} short."
+        )
     if mandatory_total + protected_hist_total > income:
         flags.append("Fixed costs and protected spending are more than your income. Reduce a fixed cost or raise income to plan savings.")
     elif scale < 1:
@@ -305,9 +376,19 @@ def compute_plan(
     if baseline_data.get("bonus"):
         flags.append("Bonus months are left out of income, so the plan is built on base salary only. Any bonus you save is extra to the plan.")
 
+    if pins_scaled:
+        flags.append("Your category amounts were more than the saving leaves room for, so they were scaled down together to fit.")
+    if unassigned > 0:
+        flags.append(
+            f"£{unassigned:,.2f} a month is not given to any category, because every category is set by hand. "
+            "Reset the sliders or move one to share it out."
+        )
+
     return {
         "window_months": baseline_data.get("window_months", []),
         "bike_sold": sold,
+        "variable_pool": _money(pool),
+        "pins": {"set": {k: _money(v) for k, v in pins.items() if k in amounts}, "scaled": pins_scaled, "unassigned": unassigned},
         "income": {"base": _money(base), "household": _money(household), "total": _money(income)},
         "saving": {
             "value": _money(saving),

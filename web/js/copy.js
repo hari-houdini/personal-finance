@@ -53,8 +53,9 @@ export const BUDGET_TIPS = {
   saving: "The most you could save each month. Save more and there is less left to spend. Save nothing and everything you earn is free to spend.",
   bike: "Assume I sell my bike. Its insurance comes out of the plan.",
   mandatory: "Bills, rent, loan repayments and insurance you pay whatever you spend. These stay as they are.",
-  protected: "Spending you can cut only after everything else: groceries, pharmacy, fuel, pets and family support.",
-  discretionary: "Everything else you spend. It is shared out in proportion to what you usually spend. The bar shows your allowance against your usual spend.",
+  protected: "Groceries, pharmacy, fuel, pets and family support. These are cut last: each keeps its usual amount unless the saving leaves too little. Move a slider to set one by hand.",
+  discretionary: "Everything else you spend. Move a slider to set a category by hand; the others share what is left in proportion to what you usually spend. The bar shows your allowance against your usual spend.",
+  reset: "Clears every category you set by hand, so the plan shares the money out again.",
   stability: "Your emergency fund and debts, at the saving the slider chooses.",
 };
 

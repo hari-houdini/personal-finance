@@ -148,6 +148,10 @@ Your personal Budget plan figures. Gitignored. Changing a payee pattern or `excl
   "fixed_overrides": { "transport.car_insurance": 100.00 },
   "bike": { "payee_pattern": "BIKE INSURER", "sold": false },
   "excluded_patterns": ["ONE OFF SHOP"],
+  "card_repayments": [
+    { "name": "Virgin Money", "monthly": 150 },
+    { "name": "Barclaycard", "monthly": 150 }
+  ],
   "debts": {
     "car_finance": { "balance": 6100.0, "apr": 7.9, "months_left": 14 },
     "education_loan": { "balance": 2000.0, "apr": 0, "months_left": 4 }
@@ -163,6 +167,7 @@ Your personal Budget plan figures. Gitignored. Changing a payee pattern or `excl
 | `fixed_overrides` | A fixed amount that replaces the statement figure for a fixed sub-category, for example a premium you know is current. |
 | `bike` | The payee for a bike you still own, and whether you have sold it. A sold bike's cost comes out of the plan. |
 | `excluded_patterns` | Payees left out of the baseline: one-offs and costs that have ended. |
+| `card_repayments` | Credit cards you repay each month, with the planned `monthly` amount. Each one is a fixed cost, at the planned amount rather than the history. Card repayments are excluded from the spending history by their transfer category. |
 | `debts` | Balance, interest rate (APR) and months left for each debt. Used for the stability figures and the order of repayment. |
 
 ## `config/local/stability.json`

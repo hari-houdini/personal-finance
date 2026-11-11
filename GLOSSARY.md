@@ -56,6 +56,14 @@ _Avoid_: Essential, must-have
 Any spending that is neither mandatory nor protected. The slider shares out what is left across these, in proportion to what you usually spend.
 _Avoid_: Discretionary (that is the taxonomy kind, which is narrower)
 
+**Category slider**:
+A slider on each protected and variable expense. Moving one sets that category by hand and the others share what is left, so the total always matches the saving the master slider chooses.
+_Avoid_: Allocation, budget cap
+
+**Pin**:
+A category amount set by hand with a category slider. Pinned amounts stay as set until reset, and the others are shared around them. Pins live in the page session and are not saved.
+_Avoid_: Override (that is a one-off correction to a transaction)
+
 **Base salary**:
 The regular pay used for planning, without bonuses. It changes once a year, at the October pay rise.
 _Avoid_: Income, wage

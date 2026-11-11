@@ -123,6 +123,7 @@ Query parameters:
 |---|---|
 | `saving` | Monthly saving in pounds. Optional. Defaults to the savings-rate target (20% of income), capped at what fixed costs and protected spending allow. Values are clamped to `0` … `saving.max`. |
 | `bike_sold` | `true` takes the motorbike's insurance out of the plan. Optional. Defaults to the value in `config/local/budget.json`. |
+| `allocations` | JSON object of protected or variable category ID to pounds, for categories the owner has set by hand (pins). Optional. The other variable categories share the rest of the pool in proportion to usual spend, and protected spending is cut last. Pins above the pool are scaled down together. An unknown category ID or a malformed value is `422`. Example: `allocations={"eating_out.cafes_coffee":40}` |
 
 The response is split into `income`, `saving` (value, min, max, step, default, target and rate), `mandatory` (fixed lines), `protected` (lines with `historical` and `allowance`), `discretionary` (the same, sharing what is left), `stability` (emergency fund and debts), `bonus`, `benchmarks` (company averages for water and energy, next to `yours`), `flags` and `limits`. Allowances plus fixed costs plus saving always add up to income. The full shape is defined in [`app/budget.py`](../app/budget.py).
 

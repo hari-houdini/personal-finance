@@ -674,14 +674,16 @@ function renderStability() {
 
 // ---------- Budget plan ----------
 
-// The slider and the motorbike switch both reload the plan from the API. Only the values they change are sent.
-const budgetQuery = { saving: null, bike_sold: null };
+// The saving slider, the motorbike switch and the category sliders all reload the plan from the API.
+// Only the values they change are sent; allocations are the categories the owner has set by hand.
+const budgetQuery = { saving: null, bike_sold: null, allocations: {} };
 
 async function loadBudget(change = {}) {
   Object.assign(budgetQuery, change);
   const params = new URLSearchParams();
   if (budgetQuery.saving != null) params.set("saving", String(budgetQuery.saving));
   if (budgetQuery.bike_sold != null) params.set("bike_sold", String(budgetQuery.bike_sold));
+  if (Object.keys(budgetQuery.allocations || {}).length) params.set("allocations", JSON.stringify(budgetQuery.allocations));
   try {
     const data = await getJson(`/api/budget?${params}`);
     renderBudget($("budget-root"), data, (next) => loadBudget(next));
