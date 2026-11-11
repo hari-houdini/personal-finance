@@ -13,7 +13,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from app import analytics, chat, stability
+from app import analytics, budget, chat, stability
 from app.ingest import pipeline, resolver
 from app.ingest.classify import Classifier, Taxonomy
 from app.paths import (
@@ -131,7 +131,30 @@ def get_stability() -> dict:
     data = store.get()
     if data is None:
         raise HTTPException(409, "No reports yet. Run the import first.")
-    return stability.compute(data.transactions, CONFIG_DIR / "stability.json")
+    return stability.compute(data.transactions, CONFIG_DIR / "stability.json", LOCAL_CONFIG_DIR / "stability.json")
+
+
+def _read_optional(path) -> dict:
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+
+
+@app.get("/api/budget")
+def get_budget(saving: float | None = Query(None, ge=0), bike_sold: bool | None = None) -> dict:
+    """Budget plan for one monthly saving amount. saving defaults to the savings-rate target, capped at what is affordable."""
+    baseline_path = REPORTS_DIR / "budget_baseline.json"
+    if not baseline_path.exists():
+        raise HTTPException(409, "No budget baseline yet. Run the import first.")
+    taxonomy = json.loads((CONFIG_DIR / "taxonomy.json").read_text(encoding="utf-8"))
+    return budget.compute_plan(
+        baseline_data=json.loads(baseline_path.read_text(encoding="utf-8")),
+        rules=json.loads((CONFIG_DIR / "budget.json").read_text(encoding="utf-8")),
+        local=_read_optional(LOCAL_CONFIG_DIR / "budget.json"),
+        user_balances=_read_optional(LOCAL_CONFIG_DIR / "stability.json").get("user_entered", {}),
+        targets=json.loads((CONFIG_DIR / "stability.json").read_text(encoding="utf-8")),
+        names=budget.subcategory_names(taxonomy),
+        saving=saving,
+        bike_sold=bike_sold,
+    )
 
 
 class Reclassify(BaseModel):
@@ -225,8 +248,11 @@ class BalancesRequest(BaseModel):
 
 @app.put("/api/stability/balances")
 def set_balances(body: BalancesRequest) -> dict:
-    path = CONFIG_DIR / "stability.json"
-    config = json.loads(path.read_text(encoding="utf-8"))
+    """Saves balances to config/local/stability.json (gitignored), never to the committed config."""
+    path = LOCAL_CONFIG_DIR / "stability.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    config = _read_optional(path) or {"user_entered": {}}
+    config.setdefault("user_entered", {})
     config["user_entered"]["emergency_fund_balance"] = body.emergency_fund_balance
     config["user_entered"]["loan_balances"] = body.loan_balances
     path.write_text(json.dumps(config, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")

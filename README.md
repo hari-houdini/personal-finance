@@ -10,6 +10,7 @@ Your statements never leave the machine. The only outbound calls are the ones yo
 - **Cash flow, categories and merchants:** where money moves, drilled down from category to sub-category to individual shops.
 - **Trends and distributions:** monthly and daily patterns, and how big individual payments are.
 - **Stability plan:** savings rate and emergency-fund cover against targets. Balances you enter replace the estimates.
+- **Budget plan:** fixed costs stay as they are. A slider sets how much you save each month, and the tab shows what you can spend in each variable category.
 - **Transactions:** every transaction, with a "Needs review" tab and one-click recategorisation.
 - **Ask:** questions about your own data, answered in an advice panel.
 

@@ -1,0 +1,29 @@
+{
+  "_comment": "Generic budget rules, committed. Personal figures (salary, family support, bike, balances) live in config/local/budget.json and config/local/stability.json.",
+  "trailing_months": 3,
+  "mandatory_subcategories": [
+    "housing.rent",
+    "housing.council_tax",
+    "housing.energy",
+    "housing.water",
+    "housing.broadband",
+    "transport.car_insurance",
+    "taxes.vehicle_tax",
+    "subscriptions.phone_contract"
+  ],
+  "mandatory_kinds": ["debt"],
+  "protected_subcategories": [
+    "food.supermarket",
+    "food.convenience",
+    "food.greengrocer_market",
+    "food.bakery_specialty",
+    "food.online_grocery",
+    "health.pharmacy",
+    "transport.fuel_charging",
+    "pets.food",
+    "pets.vet_medication",
+    "pets.supplies"
+  ],
+  "variable_kinds": ["essential", "discretionary", "fee", "refund"],
+  "variable_transfer_subcategories": ["transfers.family_out"]
+}

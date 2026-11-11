@@ -113,6 +113,19 @@ The values above are illustrative. Real records carry more fields; see `reports/
 
 Savings rate, emergency-fund cover and debt progress against `config/stability.json`. Takes no filters. The response includes `savings_rate`, `savings_rate_target`, `window_months`, `spending_monthly`, `earned_income_monthly`, `surplus_monthly`, and `monthly_gap_to_target`, plus the emergency-fund and debt sections. Each figure is labelled as an estimate or user-entered. The full shape is defined in [`app/stability.py`](../app/stability.py).
 
+#### `GET /api/budget`
+
+The Budget plan for one monthly saving amount. Reads `reports/budget_baseline.json` (written by each rebuild) and the personal figures in `config/local/`. Returns 409 until the first import has run.
+
+Query parameters:
+
+| Parameter | Meaning |
+|---|---|
+| `saving` | Monthly saving in pounds. Optional. Defaults to the savings-rate target (20% of income), capped at what fixed costs and protected spending allow. Values are clamped to `0` … `saving.max`. |
+| `bike_sold` | `true` takes the motorbike's insurance out of the plan. Optional. Defaults to the value in `config/local/budget.json`. |
+
+The response is split into `income`, `saving` (value, min, max, step, default, target and rate), `mandatory` (fixed lines), `protected` (lines with `historical` and `allowance`), `discretionary` (the same, sharing what is left), `stability` (emergency fund and debts), `bonus`, `flags` and `limits`. Allowances plus fixed costs plus saving always add up to income. The full shape is defined in [`app/budget.py`](../app/budget.py).
+
 #### `GET /api/resolve/candidates`
 
 Merchant fragments waiting for identification. Makes no outbound calls.
@@ -172,7 +185,7 @@ Save balances the owner enters. These replace the estimates on the Stability pag
 
 `loan_balances` is keyed by the loan's name. Each loan has a `balance` and an annual `apr` as a percentage. Pass `null` for `emergency_fund_balance` to clear it.
 
-Writes to the `user_entered` section of `config/stability.json`. **That file is committed to git.** See the [runbook](runbook.md#balances-are-saved-into-a-committed-file).
+Writes to the `user_entered` section of `config/local/stability.json`, which is gitignored. See [configuration](configuration.md#configlocalstabilityjson).
 
 Response: `{"ok": true}`
 

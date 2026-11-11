@@ -10,9 +10,10 @@ import hashlib
 import json
 import logging
 from collections import defaultdict
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 
+from app import budget
 from app.ingest.classify import Classifier
 from app.ingest.parsers import ParseError, RawTransaction, parse_statement
 
@@ -120,6 +121,7 @@ def build(
         },
     )
     _write_json(reports_dir / "summary.json", _summarise(records, generated))
+    _write_json(reports_dir / "budget_baseline.json", _budget_baseline(records, config_dir, local_dir))
     _write_json(
         reports_dir / "import_manifest.json",
         {"generated_at": generated, "statements": manifest, "failures": failures},
@@ -153,6 +155,14 @@ def _summarise(records: list[dict], generated: str) -> dict:
         "subcategory_totals": {k: round(v, 2) for k, v in sorted(by_sub.items(), key=lambda kv: kv[1])},
         "merchant_totals": {k: round(v, 2) for k, v in sorted(by_merchant.items(), key=lambda kv: kv[1])[:200]},
     }
+
+
+def _budget_baseline(records: list[dict], config_dir: Path, local_dir: Path) -> dict:
+    """Trailing averages for the Budget tab. Reads config/budget.json (committed) and config/local/budget.json (gitignored)."""
+    rules = json.loads((config_dir / "budget.json").read_text(encoding="utf-8"))
+    local_path = local_dir / "budget.json"
+    local = json.loads(local_path.read_text(encoding="utf-8")) if local_path.exists() else {}
+    return budget.baseline(records, rules, local, date.today())
 
 
 def _write_json(path: Path, payload: dict) -> None:

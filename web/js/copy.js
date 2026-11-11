@@ -48,6 +48,16 @@ export const STAB_TIPS = {
   emergencyFund: "How many months your emergency fund would pay for your essentials, if you lost your income.",
 };
 
+// Budget tab: what each block of the plan means, in the same plain words.
+export const BUDGET_TIPS = {
+  saving: "The most you could save each month. Save more and there is less left to spend. Save nothing and everything you earn is free to spend.",
+  bike: "Assume I sell my bike. Its insurance comes out of the plan.",
+  mandatory: "Bills, rent, loan repayments and insurance you pay whatever you spend. These stay as they are.",
+  protected: "Spending you can cut only after everything else: groceries, pharmacy, fuel, pets and family support.",
+  discretionary: "Everything else you spend. It is shared out in proportion to what you usually spend. The bar shows your allowance against your usual spend.",
+  stability: "Your emergency fund and debts, at the saving the slider chooses.",
+};
+
 // Short hints shown on hover over each chart title, so every chart says what a click does.
 export const CHART_HINTS = {
   "stacked-area": "Click a month to see only that month.",
@@ -114,6 +124,7 @@ export const RAIL_TIPS = {
   trends: "How your spending changes over time.",
   distributions: "How big each payment is, and how often each size happens.",
   stability: "How close you are to the savings and emergency fund targets.",
+  budget: "What you can spend in each category, for the monthly saving you choose.",
   transactions: "Every single payment, with the option to change its category.",
   ask: "Ask a question about your money in plain words.",
 };

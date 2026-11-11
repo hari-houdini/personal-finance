@@ -6,7 +6,10 @@ All configuration is plain JSON. The dashboard reads most of it on every request
 |---|---|---|---|
 | [`config/taxonomy.json`](#configtaxonomyjson) | Yes | You | Classifier, dashboard filters |
 | [`config/merchants.json`](#configmerchantsjson) | Yes | You | Classifier |
-| [`config/stability.json`](#configstabilityjson) | Yes | You, and the balances form | Stability plan |
+| [`config/stability.json`](#configstabilityjson) | Yes | You | Stability plan, Budget plan |
+| [`config/budget.json`](#configbudgetjson) | Yes | You | Budget plan (ingest) |
+| [`config/local/budget.json`](#configlocalbudgetjson) | No | You | Budget plan |
+| [`config/local/stability.json`](#configlocalstabilityjson) | No | The balances forms | Stability plan, Budget plan |
 | [`config/local/rules.json`](#configlocalrulesjson) | No | "Remember for this merchant" | Classifier |
 | [`config/local/overrides.json`](#configlocaloverridesjson) | No | Changing one transaction's category | Classifier |
 | [`reports/merchant_cache.json`](#reportsmerchant_cachejson) | No | "Identify merchants" | Classifier |
@@ -104,7 +107,73 @@ Targets for the Stability plan, and the balances you enter.
 | `user_entered.emergency_fund_balance` | Your real emergency-fund balance, in pounds, or `null` to use the estimate. |
 | `user_entered.loan_balances` | Your loans, keyed by name, each with `balance` and `apr`. |
 
-Balances are the only part the dashboard writes. The "Your balances" form saves them here. **This file is committed to git**, so real balances would be committed too. See [the runbook](runbook.md#balances-are-saved-into-a-committed-file) for how to keep them out of git.
+The `user_entered` block here is a fallback. The "Your balances" form now saves to [`config/local/stability.json`](#configlocalstabilityjson), which is gitignored, and the app reads that file when it exists. Keep real balances out of this committed file.
+
+## `config/budget.json`
+
+Generic rules for the Budget plan: which sub-categories are fixed (mandatory), which are protected, and which kinds are variable. Committed, so it holds no personal figures.
+
+```json
+{
+  "trailing_months": 3,
+  "mandatory_subcategories": ["housing.rent", "housing.council_tax", "transport.car_insurance", "..."],
+  "mandatory_kinds": ["debt"],
+  "protected_subcategories": ["food.supermarket", "health.pharmacy", "transport.fuel_charging", "..."],
+  "variable_kinds": ["essential", "discretionary", "fee", "refund"],
+  "variable_transfer_subcategories": ["transfers.family_out"]
+}
+```
+
+| Key | Meaning |
+|---|---|
+| `trailing_months` | Complete months the variable averages use. |
+| `mandatory_subcategories` | Fixed costs. Shown as they are; the slider does not change them. Fixed costs use the latest complete month. |
+| `mandatory_kinds` | Every sub-category of these kinds is fixed. `debt` covers loan and finance repayments. |
+| `protected_subcategories` | Variable spending that is cut last. |
+| `variable_kinds` | Kinds that count as variable spending when not fixed or protected. |
+| `variable_transfer_subcategories` | Transfer sub-categories that count as variable, such as family support sent to family. |
+
+## `config/local/budget.json`
+
+Your personal Budget plan figures. Gitignored. Changing a payee pattern or `excluded_patterns` needs a rebuild (`app.ingest.cli`). Salary, household and debt figures apply on the next request.
+
+```json
+{
+  "base_salary": { "amount": 3000, "effective_from": "2026-10" },
+  "household_contribution": { "amount": 500 },
+  "family_support": { "payee_pattern": "FAMILY PAYEE", "education_loan_monthly": 500, "protected_monthly": 300 },
+  "fixed_overrides": { "transport.car_insurance": 100.00 },
+  "bike": { "payee_pattern": "BIKE INSURER", "sold": false },
+  "excluded_patterns": ["ONE OFF SHOP"],
+  "debts": {
+    "car_finance": { "balance": 6100.0, "apr": 7.9, "months_left": 14 },
+    "education_loan": { "balance": 2000.0, "apr": 0, "months_left": 4 }
+  }
+}
+```
+
+| Key | Meaning |
+|---|---|
+| `base_salary` | Your base salary, without bonuses. Bonus months are found in the statements and left out. |
+| `household_contribution` | Money from someone else that you count as income in the plan. |
+| `family_support` | The payee you send money to, the fixed education loan repayment inside it, and the protected family amount. |
+| `fixed_overrides` | A fixed amount that replaces the statement figure for a fixed sub-category, for example a premium you know is current. |
+| `bike` | The payee for a bike you still own, and whether you have sold it. A sold bike's cost comes out of the plan. |
+| `excluded_patterns` | Payees left out of the baseline: one-offs and costs that have ended. |
+| `debts` | Balance, interest rate (APR) and months left for each debt. Used for the stability figures and the order of repayment. |
+
+## `config/local/stability.json`
+
+The balances you enter on the Stability plan and Budget plan tabs. Gitignored.
+
+```json
+{
+  "user_entered": {
+    "emergency_fund_balance": 4200.0,
+    "loan_balances": {}
+  }
+}
+```
 
 ## `config/local/rules.json`
 

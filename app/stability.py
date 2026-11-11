@@ -1,8 +1,9 @@
 """Stability metrics: emergency-fund cover, savings rate, debt progress.
 
 Limits, stated plainly in the output: statements show card and current-account
-activity only. Balances come from config/stability.json (user_entered) when set,
-and otherwise from transfer totals as an estimate, labelled as such.
+activity only. Balances come from config/local/stability.json (user_entered) when
+that file exists, otherwise from config/stability.json, and otherwise from transfer
+totals as an estimate, labelled as such.
 """
 
 from __future__ import annotations
@@ -21,8 +22,10 @@ def _window_months(all_months: list[str], n: int) -> list[str]:
     return all_months[-n:] if all_months else []
 
 
-def compute(rows: list[dict], config_path: Path) -> dict:
+def compute(rows: list[dict], config_path: Path, local_path: Path | None = None) -> dict:
     config = json.loads(config_path.read_text(encoding="utf-8"))
+    if local_path is not None and local_path.exists():
+        config["user_entered"] = json.loads(local_path.read_text(encoding="utf-8")).get("user_entered", {})
     n = int(config.get("trailing_months_for_baseline", BASELINE_MONTHS_DEFAULT))
     series = monthly(rows)
     # The current month is partial, so it is left out of the baseline to avoid understating averages.
@@ -93,7 +96,7 @@ def compute(rows: list[dict], config_path: Path) -> dict:
             "method": config.get("debt_method", "avalanche"),
             "monthly_payments": debts,
             "avalanche_order": avalanche,
-            "note": None if avalanche else "Enter your loan balances and APRs in config/stability.json to get the avalanche order.",
+            "note": None if avalanche else "Enter your loan balances and APRs on the Stability plan tab to get the avalanche order.",
         },
         "series": series[-12:],
         "limits": "Statements cover card and current-account activity only. Balances marked as estimates come from transfers, not bank balances.",

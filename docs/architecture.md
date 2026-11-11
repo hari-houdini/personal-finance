@@ -56,6 +56,7 @@ Goals, in priority order:
 | `app/ingest/cli.py` | Command line: one-off rebuild, `--watch`, and `--resolve`. |
 | `app/analytics.py` | Pure functions over `transactions.json`. Every chart's numbers come from here. |
 | `app/stability.py` | Savings rate, emergency-fund cover and debt progress against `config/stability.json`. |
+| `app/budget.py` | Budget plan. `baseline()` averages spending per sub-category over complete months and runs at ingest. `compute_plan()` sets allowances for the chosen saving on each request. Pure functions. |
 | `app/chat.py` | Sends the owner's question to the `claude` CLI with read-only access to `reports/`. |
 | `app/api.py` | JSON API and the static dashboard. |
 | `web/` | Dashboard. Plain ES modules, D3 vendored under `web/vendor/`, no build step. |

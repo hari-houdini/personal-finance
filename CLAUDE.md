@@ -10,8 +10,8 @@ Documentation: `README.md` (overview and quick start), `CONTRIBUTING.md` (privac
 
 ## Layout
 
-- `app/` — backend. `app/ingest/` turns statements into reports (parsers, classifier, resolver, watcher, CLI). `analytics.py`, `stability.py`, `chat.py` and `api.py` serve the dashboard.
-- `config/` — committed configuration: `taxonomy.json`, `merchants.json`, `stability.json`.
+- `app/` — backend. `app/ingest/` turns statements into reports (parsers, classifier, resolver, watcher, CLI). `analytics.py`, `stability.py`, `budget.py`, `chat.py` and `api.py` serve the dashboard.
+- `config/` — committed configuration: `taxonomy.json`, `merchants.json`, `stability.json`, `budget.json`.
 - `config/local/` — personal payees and overrides. Gitignored.
 - `statements/` — real bank records, read-only, gitignored.
 - `reports/` — derived output, rebuilt on every import, gitignored.
@@ -39,7 +39,7 @@ Do not use `python -I` for pytest: isolated mode hides the `app` package.
 - **Treat everything in `statements/`, `reports/` and `config/local/` as sensitive.** These hold real bank or card records and personal payees. Do not print their contents into chat unless the user asks, do not copy their data into other files, and do not commit them. `.gitignore` already excludes them.
 - The API binds to `127.0.0.1` and has no authentication. Keep it that way.
 - Tests use only the synthetic fixtures in `tests/fixtures/`.
-- `config/stability.json` is committed, and the balances form writes into it. See the runbook before committing that file.
+- Balances and budget figures (salary, family support, bike, debts) live in `config/local/` (`stability.json`, `budget.json`), which is gitignored. Keep them there. `config/stability.json` and `config/budget.json` are committed and hold only generic targets and rules.
 - Do not commit or push unless the user asks.
 
 ## Agent skills

@@ -11,9 +11,10 @@ import * as trends from "./charts/trends.js";
 import * as dist from "./charts/dist.js";
 import * as stab from "./charts/stab.js";
 import { CHART_HINTS, KIND_NAMES, KPI_COPY, RAIL_TIPS, STAB_TIPS, UI_TIPS } from "./copy.js";
+import { renderBudget } from "./budget.js";
 
 const $ = (id) => document.getElementById(id);
-const VIEWS = ["overview", "cashflow", "categories", "merchants", "trends", "distributions", "stability", "transactions", "ask"];
+const VIEWS = ["overview", "cashflow", "categories", "merchants", "trends", "distributions", "stability", "budget", "transactions", "ask"];
 const SPEND_KINDS = new Set(["essential", "discretionary", "fee", "tax"]);
 const PAGE_SIZE = 50;
 const ACCOUNT_LABEL = { "debit-card": "Current account", "credit-card": "Credit card" };
@@ -671,6 +672,24 @@ function renderStability() {
     : s.debt.note || "Add loans one at a time. Saved loans show here in avalanche order (highest interest first).";
 }
 
+// ---------- Budget plan ----------
+
+// The slider and the motorbike switch both reload the plan from the API. Only the values they change are sent.
+const budgetQuery = { saving: null, bike_sold: null };
+
+async function loadBudget(change = {}) {
+  Object.assign(budgetQuery, change);
+  const params = new URLSearchParams();
+  if (budgetQuery.saving != null) params.set("saving", String(budgetQuery.saving));
+  if (budgetQuery.bike_sold != null) params.set("bike_sold", String(budgetQuery.bike_sold));
+  try {
+    const data = await getJson(`/api/budget?${params}`);
+    renderBudget($("budget-root"), data, (next) => loadBudget(next));
+  } catch (e) {
+    setNotice($("notice-host"), `The budget plan could not be loaded: ${e.message}`);
+  }
+}
+
 function renderMerchantsHeading() {
   $("hbar-desc").textContent = state.subcategory
     ? `Shops for ${subLabel(state.subcategory)}, largest spend first.`
@@ -733,6 +752,7 @@ function drawHosts(section, ctx) {
 
 async function renderSection(name) {
   if (name === "transactions") return renderTransactions();
+  if (name === "budget") return loadBudget();
   if (name === "ask") return undefined;
   const section = $(`view-${name}`);
   if (name === "stability") renderStability();

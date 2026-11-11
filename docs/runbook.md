@@ -10,7 +10,7 @@ Step-by-step procedures for the routine tasks and the things that go wrong. Comm
 - [Reports look wrong or are corrupt](#reports-look-wrong-or-are-corrupt)
 - [The Ask panel does not answer](#the-ask-panel-does-not-answer)
 - [A one-off correction disappeared](#a-one-off-correction-disappeared)
-- [Balances are saved into a committed file](#balances-are-saved-into-a-committed-file)
+- [Balances and budget figures stay out of git](#balances-and-budget-figures-stay-out-of-git)
 - [Roll back a config change](#roll-back-a-config-change)
 - [Escalation](#escalation)
 
@@ -173,23 +173,21 @@ The Ask panel uses the `claude` CLI. A failed question appears in the conversati
 
 **Prevention:** keep the statement files exactly as the bank gave them. Do not rename rows or re-save CSVs in a spreadsheet.
 
-## Balances are saved into a committed file
+## Balances and budget figures stay out of git
 
-**Known issue.** The "Your balances" form on the Stability page writes into `config/stability.json` under `user_entered`. That file is tracked by git, so the balances you enter would be committed the next time you commit that file.
+The "Your balances" form (Stability plan) saves to `config/local/stability.json`, and the Budget plan reads its salary, family support and bike figures from `config/local/budget.json`. Both folders are gitignored, so your real numbers are not committed.
 
-**Check before every commit:**
+`config/stability.json` still has a `user_entered` block for older setups, but the app reads and writes the local file when it exists. If you see real values in `config/stability.json`, move them to `config/local/stability.json` and reset that block to `null`, then check:
 
 ```bash
 git diff config/stability.json
 ```
 
-If the diff shows your real balances, do not commit that file. Either remove the values, or commit your other changes without it:
+If the diff shows real values, do not commit that file. Commit your other changes without it:
 
 ```bash
 git restore --staged config/stability.json
 ```
-
-**Permanent fix:** move `user_entered` into `config/local/`, which is gitignored. This needs a code change in `app/stability.py`, `app/api.py` and the stability config path. It has not been made yet. Track it in the issue tracker, see [escalation](#escalation).
 
 ## Roll back a config change
 
