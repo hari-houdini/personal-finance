@@ -16,6 +16,7 @@ from datetime import date
 
 SAVING_STEP = 10.0
 BONUS_RATIO = 1.05  # a salary credit more than 5% above base salary counts as a bonus
+ANNUAL_MONTHS = 12  # lumpy fixed bills (annual_average_subcategories) are averaged over this many complete months
 LIMITS = (
     "Variable spend uses the complete months in the trailing window, from the statements. Fixed costs use the latest "
     "complete month. Base salary, household contribution, family support and balances come from config/local/."
@@ -66,6 +67,9 @@ def baseline(records: list[dict], rules: dict, local: dict, today: date) -> dict
     protected_subs = set(rules.get("protected_subcategories", []))
     variable_kinds = set(rules.get("variable_kinds", ["essential", "discretionary", "fee", "refund"]))
     variable_transfers = set(rules.get("variable_transfer_subcategories", ["transfers.family_out"]))
+    annual_subs = set(rules.get("annual_average_subcategories", []))
+    annual_window = complete_months(today, ANNUAL_MONTHS)
+    annual_sum: dict[str, float] = defaultdict(float)
 
     mandatory: dict[str, dict[str, float]] = defaultdict(lambda: defaultdict(float))
     protected: dict[str, dict[str, float]] = defaultdict(lambda: defaultdict(float))
@@ -79,9 +83,11 @@ def baseline(records: list[dict], rules: dict, local: dict, today: date) -> dict
 
     for r in records:
         month = r["date"][:7]
+        sub, kind = r["subcategory_id"], r["kind"]
+        if sub in annual_subs and month in annual_window and not _matches(r.get("description") or "", excluded):
+            annual_sum[sub] += -float(r["amount"])
         if month not in window:
             continue
-        sub, kind = r["subcategory_id"], r["kind"]
         desc = r.get("description") or ""
         amount = float(r["amount"])
         out = -amount  # positive = money out
@@ -116,7 +122,12 @@ def baseline(records: list[dict], rules: dict, local: dict, today: date) -> dict
         return sum(by_month.values()) / n
 
     mandatory_lines = {}
+    for sub in annual_subs:
+        if annual_sum.get(sub, 0.0) > 0:
+            mandatory_lines[sub] = {"amount": _money(annual_sum[sub] / ANNUAL_MONTHS), "basis": f"{ANNUAL_MONTHS}-month average"}
     for sub, by_month in mandatory.items():
+        if sub in annual_subs:
+            continue
         last = by_month.get(latest, 0.0)
         if last > 0:
             mandatory_lines[sub] = {"amount": _money(last), "basis": f"latest month ({latest})"}
@@ -269,6 +280,20 @@ def compute_plan(
         flags.append("Enter your emergency fund balance to see how many months it covers.")
     if any(d["balance"] is None for d in debts):
         flags.append("Enter the remaining balance for each debt to see when it clears.")
+    cap = rules.get("energy_cap") or {}
+    energy_line = next((line for line in mandatory_lines if line["id"] == "housing.energy"), None)
+    if energy_line and cap and not cap.get("next_quarter_confirmed"):
+        raised = _money(energy_line["amount"] * (1 + float(cap.get("next_quarter_forecast_increase", 0))))
+        flags.append(
+            f"The Ofgem cap for {cap.get('next_quarter', 'next quarter')} is not confirmed yet. "
+            f"If it rises by the forecast, energy would be about £{raised:,.2f} a month."
+        )
+    benchmarks = {}
+    for key, line_id in (("water", "housing.water"), ("energy", "housing.energy")):
+        info = (rules.get("benchmarks") or {}).get(key)
+        if info:
+            yours = next((line["amount"] for line in mandatory_lines if line["id"] == line_id), None)
+            benchmarks[key] = {"name": names.get(line_id, line_id), **info, "yours": yours}
     unresolved = baseline_data.get("unresolved", {})
     if unresolved.get("monthly_average", 0) > 0:
         flags.append(
@@ -309,6 +334,7 @@ def compute_plan(
             "protected": family_protected,
             "historical_monthly_average": baseline_data.get("family_support", {}).get("monthly_average"),
         },
+        "benchmarks": benchmarks,
         "flags": flags,
         "limits": LIMITS,
     }

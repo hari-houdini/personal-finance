@@ -124,7 +124,7 @@ Query parameters:
 | `saving` | Monthly saving in pounds. Optional. Defaults to the savings-rate target (20% of income), capped at what fixed costs and protected spending allow. Values are clamped to `0` … `saving.max`. |
 | `bike_sold` | `true` takes the motorbike's insurance out of the plan. Optional. Defaults to the value in `config/local/budget.json`. |
 
-The response is split into `income`, `saving` (value, min, max, step, default, target and rate), `mandatory` (fixed lines), `protected` (lines with `historical` and `allowance`), `discretionary` (the same, sharing what is left), `stability` (emergency fund and debts), `bonus`, `flags` and `limits`. Allowances plus fixed costs plus saving always add up to income. The full shape is defined in [`app/budget.py`](../app/budget.py).
+The response is split into `income`, `saving` (value, min, max, step, default, target and rate), `mandatory` (fixed lines), `protected` (lines with `historical` and `allowance`), `discretionary` (the same, sharing what is left), `stability` (emergency fund and debts), `bonus`, `benchmarks` (company averages for water and energy, next to `yours`), `flags` and `limits`. Allowances plus fixed costs plus saving always add up to income. The full shape is defined in [`app/budget.py`](../app/budget.py).
 
 #### `GET /api/resolve/candidates`
 

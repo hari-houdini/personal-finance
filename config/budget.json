@@ -24,6 +24,25 @@
     "pets.vet_medication",
     "pets.supplies"
   ],
+  "annual_average_subcategories": ["housing.water"],
   "variable_kinds": ["essential", "discretionary", "fee", "refund"],
-  "variable_transfer_subcategories": ["transfers.family_out"]
+  "variable_transfer_subcategories": ["transfers.family_out"],
+  "benchmarks": {
+    "water": {
+      "monthly": 48.94,
+      "label": "Severn Trent average, 2026/27: £587 a year, company-wide",
+      "source": "https://www.expressandstar.com/news/business/2026/01/29/severn-trent-customers-face-ten-per-cent-hike-in-bills"
+    },
+    "energy": {
+      "monthly": 143.58,
+      "label": "Ofgem typical dual-fuel bill, Oct to Dec 2026: £1,723 a year, national (not West Midlands)",
+      "source": "https://www.payplan.com/blog/ofgem-energy-price-cap-hits-three-year-high/"
+    }
+  },
+  "energy_cap": {
+    "next_quarter": "January to March 2027",
+    "next_quarter_forecast_increase": 0.14,
+    "next_quarter_confirmed": false,
+    "note": "Forecast only, from an unconfirmed headline. Set next_quarter_confirmed to true once Ofgem publishes the January cap, and update the forecast."
+  }
 }

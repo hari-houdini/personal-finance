@@ -132,6 +132,9 @@ Generic rules for the Budget plan: which sub-categories are fixed (mandatory), w
 | `protected_subcategories` | Variable spending that is cut last. |
 | `variable_kinds` | Kinds that count as variable spending when not fixed or protected. |
 | `variable_transfer_subcategories` | Transfer sub-categories that count as variable, such as family support sent to family. |
+| `annual_average_subcategories` | Fixed sub-categories billed irregularly (such as water). Their amount is the total over the last 12 complete months divided by 12, instead of the latest month. |
+| `benchmarks` | Reference averages shown beside water and energy in the Fixed costs panel: a monthly figure, a label and a source link. They do not change the plan. |
+| `energy_cap` | The next Ofgem cap quarter, its forecast increase, and whether Ofgem has confirmed it. While unconfirmed, the plan shows the energy cost with the forecast rise as a flag. Set `next_quarter_confirmed` to `true` and update the forecast when the cap is published. |
 
 ## `config/local/budget.json`
 

@@ -158,3 +158,37 @@ def test_committed_rules_file_names_the_expected_groups():
 def test_subcategory_names_reads_taxonomy_shape():
     taxonomy = {"categories": [{"id": "housing", "subcategories": [{"id": "housing.rent", "name": "Rent"}]}]}
     assert budget.subcategory_names(taxonomy) == {"housing.rent": "Rent"}
+
+
+def test_annual_average_spreads_a_lumpy_bill_over_twelve_months():
+    rules = {**RULES, "annual_average_subcategories": ["housing.water"]}
+    records = RECORDS + [_rec("2026-02-10", -240, "housing.water", "essential", "WATER CO")]
+    bl = budget.baseline(records, rules, LOCAL, TODAY)
+    # The bill falls outside the 3-month window, but inside the 12-month window, so it is spread: 240 / 12 = 20.
+    assert bl["mandatory"]["housing.water"] == {"amount": 20.0, "basis": "12-month average"}
+
+
+def test_excluded_pattern_removes_a_hardware_purchase_from_software():
+    local = {**LOCAL, "excluded_patterns": ["ONE OFF SHOP", r"APPLE\.COM/UK"]}
+    records = RECORDS + [
+        _rec("2026-10-06", -2549, "subscriptions.software_cloud", "discretionary", "APPLE.COM/UK 0845-600-1683"),
+    ]
+    bl = budget.baseline(records, RULES, local, TODAY)
+    assert "subscriptions.software_cloud" not in bl["discretionary"]
+    assert bl["excluded"]["total"] == 1250.0 + 2549.0
+
+
+def test_benchmarks_and_energy_cap_flag_are_returned():
+    rules = {
+        **RULES,
+        "mandatory_subcategories": ["housing.rent", "housing.energy"],
+        "benchmarks": {"water": {"monthly": 48.94, "label": "test average", "source": "test"}},
+        "energy_cap": {"next_quarter": "January to March 2027", "next_quarter_forecast_increase": 0.14, "next_quarter_confirmed": False},
+    }
+    records = RECORDS + [_rec("2026-10-02", -151, "housing.energy", "essential", "ENERGY SUPPLIER")]
+    bl = budget.baseline(records, rules, LOCAL, TODAY)
+    plan = budget.compute_plan(bl, rules, LOCAL, {}, TARGETS, {}, saving=300)
+    assert plan["benchmarks"]["water"]["monthly"] == 48.94
+    assert plan["benchmarks"]["water"]["yours"] is None  # no water bill in the latest-month rule set
+    flags = [f for f in plan["flags"] if "Ofgem cap" in f]
+    assert flags and "172.14" in flags[0]  # 151 × 1.14

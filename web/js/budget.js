@@ -113,6 +113,10 @@ function update(ui, d) {
 
   clear(ui.mandatory);
   for (const line of d.mandatory.lines) ui.mandatory.append(row(line.name, money2(line.amount), line.basis));
+  for (const [key, b] of Object.entries(d.benchmarks || {})) {
+    const note = `${b.label}. You pay ${money2(b.yours)} a month on average.`;
+    ui.mandatory.append(row(`${b.name} (company average)`, money2(b.monthly), note));
+  }
 
   clear(ui.protectedRows);
   for (const line of d.protected.lines) {
